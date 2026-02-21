@@ -7,10 +7,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  :root {
-    --bg:#0a0c10; --surface:#111318; --surface2:#181b22; --border:#22262f;
-    --accent:#c8f060; --accent2:#60c8f0; --danger:#f06060; --warn:#f0b060;
-    --text:#e8eaf0; --muted:#5a6070; --green:#60f0a0; --purple:#b060f0;
+  :root{
+    --bg:#0a0c10;--surface:#111318;--surface2:#181b22;--border:#22262f;
+    --accent:#c8f060;--accent2:#60c8f0;--danger:#f06060;--warn:#f0b060;
+    --text:#e8eaf0;--muted:#5a6070;--green:#60f0a0;--purple:#b060f0;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;min-height:100vh;}
@@ -23,14 +23,30 @@
   #toast.inf{border-color:var(--accent2);color:var(--accent2);}
 
   /* LOADING */
-  #loading{position:fixed;inset:0;background:rgba(10,12,16,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:8888;gap:14px;}
+  #loading{position:fixed;inset:0;background:rgba(10,12,16,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9888;gap:14px;}
   #loading.hidden{display:none;}
   .spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
   @keyframes spin{to{transform:rotate(360deg);}}
   #loading p{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:1px;}
 
-  /* HEADER */
-  header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:stretch;position:sticky;top:0;z-index:100;flex-wrap:wrap;}
+  /* ── LOGIN SCREEN ── */
+  #login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9000;flex-direction:column;gap:0;}
+  #login-screen.hidden{display:none;}
+  .login-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:40px;width:100%;max-width:380px;}
+  .login-logo{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:4px;color:var(--accent);text-align:center;margin-bottom:4px;}
+  .login-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);text-align:center;letter-spacing:1.5px;margin-bottom:32px;}
+  .login-field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
+  .login-field label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;}
+  .login-field input{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;font-family:'DM Mono',monospace;font-size:14px;border-radius:6px;outline:none;width:100%;transition:border-color .2s;}
+  .login-field input:focus{border-color:var(--accent);}
+  .login-field input::placeholder{color:var(--muted);}
+  .btn-login{width:100%;background:var(--accent);color:#0a0c10;border:none;padding:12px;border-radius:6px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;cursor:pointer;margin-top:8px;transition:opacity .2s;}
+  .btn-login:hover{opacity:.88;}
+  .btn-login:disabled{opacity:.4;cursor:not-allowed;}
+  .login-err{font-family:'DM Mono',monospace;font-size:11px;color:var(--danger);text-align:center;margin-top:12px;min-height:16px;}
+
+  /* ── HEADER ── */
+  header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:stretch;position:sticky;top:0;z-index:100;}
   .brand{display:flex;align-items:baseline;gap:12px;padding:14px 24px 14px 0;border-right:1px solid var(--border);margin-right:20px;}
   .brand h1{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:3px;color:var(--accent);line-height:1;}
   .brand span{color:var(--muted);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;}
@@ -38,34 +54,35 @@
   .nav-tab{background:none;border:none;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;padding:0 18px;cursor:pointer;border-bottom:3px solid transparent;transition:color .2s,border-color .2s;}
   .nav-tab:hover{color:var(--text);}
   .nav-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
-
-  /* ── MONTH NAVIGATOR (replaces all old month pickers) ── */
-  .month-nav{display:flex;align-items:center;gap:0;margin-left:auto;padding:0 4px;}
+  .month-nav{display:flex;align-items:center;gap:0;margin-left:auto;}
   .mnav-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:0 10px;line-height:1;height:100%;transition:color .2s;}
   .mnav-btn:hover{color:var(--accent);}
   .mnav-center{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;min-width:130px;}
   .mnav-month{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--text);line-height:1;}
-  .mnav-year-row{display:flex;align-items:center;gap:6px;}
-  .mnav-year{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);}
   .mnav-year-select{background:var(--surface2);border:1px solid var(--border);color:var(--accent2);font-family:'DM Mono',monospace;font-size:11px;padding:2px 4px;border-radius:3px;outline:none;cursor:pointer;}
-  .mnav-year-select:focus{border-color:var(--accent2);}
-
-  .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;margin-left:12px;margin-right:4px;}
+  .header-user{display:flex;align-items:center;gap:10px;padding:0 0 0 16px;border-left:1px solid var(--border);margin-left:12px;}
+  .user-badge{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);}
+  .user-role{font-size:9px;padding:2px 7px;border-radius:10px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;}
+  .role-owner{background:rgba(200,240,96,.12);color:var(--accent);}
+  .role-bookkeeper{background:rgba(96,200,240,.12);color:var(--accent2);}
+  .btn-logout{background:none;border:1px solid var(--border);color:var(--muted);font-family:'DM Mono',monospace;font-size:10px;padding:4px 10px;border-radius:4px;cursor:pointer;letter-spacing:1px;transition:all .2s;}
+  .btn-logout:hover{border-color:var(--danger);color:var(--danger);}
+  .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;margin-left:8px;}
   .sync-dot.syncing{background:var(--warn);animation:pulse 1s infinite;}
   .sync-dot.err{background:var(--danger);}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
   /* PAGES */
-  .page{display:none;}.page.active{display:block;}
+  #app{display:none;}.page{display:none;}.page.active{display:block;}
   .container{max-width:1500px;margin:0 auto;padding:28px 32px;}
   .section-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;margin-bottom:16px;}
   .section-divider{border:none;border-top:1px solid var(--border);margin:28px 0;}
 
-  /* CURRENT MONTH BANNER (shown on each page) */
+  /* PERIOD BANNER */
   .period-banner{display:flex;align-items:center;gap:12px;margin-bottom:24px;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:6px;}
   .period-banner .pb-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
   .period-banner .pb-val{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--accent);letter-spacing:2px;}
-  .period-banner .pb-nav{margin-left:auto;display:flex;gap:6px;}
+  .pb-nav{margin-left:auto;display:flex;gap:6px;}
   .pb-navbtn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:4px;cursor:pointer;font-family:'DM Mono',monospace;font-size:12px;transition:all .2s;}
   .pb-navbtn:hover{border-color:var(--accent);color:var(--accent);}
 
@@ -83,7 +100,7 @@
   .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   .field{display:flex;flex-direction:column;gap:4px;}
   .field label{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-family:'DM Mono',monospace;}
-  .field input[type="number"],.field input[type="text"]{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;font-family:'DM Mono',monospace;font-size:13px;border-radius:4px;outline:none;width:100%;transition:border-color .2s;}
+  .field input[type="number"],.field input[type="text"],.field input[type="password"]{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;font-family:'DM Mono',monospace;font-size:13px;border-radius:4px;outline:none;width:100%;transition:border-color .2s;}
   .field input:focus{border-color:var(--accent2);}
   .field input::placeholder{color:var(--muted);}
   .fee-note{font-family:'DM Mono',monospace;font-size:11px;color:var(--warn);background:rgba(240,176,96,.07);border:1px solid rgba(240,176,96,.2);border-radius:4px;padding:5px 10px;}
@@ -124,10 +141,8 @@
   .entry-form{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px;margin-bottom:18px;}
   .entry-form h3{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--accent2);margin-bottom:14px;}
   .efg{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px;align-items:end;}
-  .efg select{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;font-family:'DM Mono',monospace;font-size:12px;border-radius:4px;outline:none;width:100%;}
-  .efg select:focus{border-color:var(--accent2);}
-  input[type="date"]{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;font-family:'DM Mono',monospace;font-size:12px;border-radius:4px;outline:none;width:100%;}
-  input[type="date"]:focus{border-color:var(--accent2);}
+  .efg select,.efg input[type="date"]{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;font-family:'DM Mono',monospace;font-size:12px;border-radius:4px;outline:none;width:100%;}
+  .efg select:focus,.efg input[type="date"]:focus{border-color:var(--accent2);}
   .btn-eadd{background:var(--accent);color:#0a0c10;border:none;padding:8px 18px;border-radius:4px;font-family:'DM Mono',monospace;font-size:12px;font-weight:500;cursor:pointer;letter-spacing:1px;transition:opacity .2s;align-self:end;white-space:nowrap;}
   .btn-eadd:hover{opacity:.85;}.btn-eadd:disabled{opacity:.4;cursor:not-allowed;}
   .inline-note{font-family:'DM Mono',monospace;font-size:11px;border-radius:4px;padding:5px 10px;margin-top:10px;display:none;}
@@ -157,8 +172,7 @@
   .b-income{background:rgba(96,240,160,.12);color:var(--green);}
   .b-supplier{background:rgba(240,96,96,.12);color:var(--danger);}
   .b-ads-payoneer{background:rgba(96,200,240,.12);color:var(--accent2);}
-  .b-ads-cc{background:rgba(176,96,240,.12);color:var(--purple);}
-  .b-services-cc{background:rgba(176,96,240,.12);color:var(--purple);}
+  .b-ads-cc,.b-services-cc{background:rgba(176,96,240,.12);color:var(--purple);}
   .b-salary{background:rgba(240,176,96,.12);color:var(--warn);}
   .b-cc-eom{background:rgba(176,96,240,.18);color:var(--purple);}
   .day-row td{background:var(--surface2);color:var(--muted);font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;padding:7px 13px;border-top:2px solid var(--border);}
@@ -166,319 +180,393 @@
   .btn-del:hover{color:var(--danger);}
   .empty-state{text-align:center;padding:48px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;}
 
+  /* ── ADMIN PANEL ── */
+  .admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  .admin-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;}
+  .admin-card h3{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--accent2);margin-bottom:16px;}
+  .user-list{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+  .user-row{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 14px;display:flex;align-items:center;gap:10px;}
+  .user-row .ur-name{font-family:'DM Mono',monospace;font-size:13px;flex:1;}
+  .user-row .ur-role{font-size:9px;padding:2px 7px;border-radius:10px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;}
+  .ur-owner{background:rgba(200,240,96,.12);color:var(--accent);}
+  .ur-bookkeeper{background:rgba(96,200,240,.12);color:var(--accent2);}
+  .btn-del-user{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;transition:color .2s;}
+  .btn-del-user:hover{color:var(--danger);}
+  .add-user-form{display:flex;flex-direction:column;gap:10px;}
+  .add-user-form .field input{background:var(--bg);}
+  .btn-create-user{background:var(--accent2);color:#0a0c10;border:none;padding:9px 18px;border-radius:4px;font-family:'DM Mono',monospace;font-size:12px;font-weight:500;cursor:pointer;letter-spacing:1px;transition:opacity .2s;width:100%;}
+  .btn-create-user:hover{opacity:.85;}
+
   ::-webkit-scrollbar{width:5px;height:5px;}
   ::-webkit-scrollbar-track{background:var(--bg);}
   ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
 
   @media(max-width:700px){
-    header{padding:0 12px;}.container{padding:14px;}
+    header{padding:0 12px;flex-wrap:wrap;}.container{padding:14px;}
     .stores-grid{grid-template-columns:1fr;}.field-row{grid-template-columns:1fr;}
     .ext-results{grid-template-columns:1fr;}.efg{grid-template-columns:1fr 1fr;}
-    .mnav-center{min-width:100px;}
+    .admin-grid{grid-template-columns:1fr;}
   }
 </style>
 </head>
 <body>
 
-<div id="loading"><div class="spinner"></div><p>CONNECTING TO DATABASE…</p></div>
+<div id="loading"><div class="spinner"></div><p id="loading-msg">LOADING…</p></div>
 <div id="toast"></div>
 
-<header>
-  <div class="brand">
-    <h1>Revenue Ledger</h1>
-    <span>FINANCIAL TRACKER</span>
-  </div>
-  <nav class="nav-tabs">
-    <button class="nav-tab active" onclick="showPage('monthly',this)">Monthly Overview</button>
-    <button class="nav-tab" onclick="showPage('daily',this)">Daily Ledger</button>
-  </nav>
-
-  <!-- ── MONTH NAVIGATOR ── -->
-  <div class="month-nav">
-    <button class="mnav-btn" onclick="stepMonth(-1)" title="Previous month">&#8592;</button>
-    <div class="mnav-center">
-      <div class="mnav-month" id="mnav-month-label">JANUARY</div>
-      <div class="mnav-year-row">
-        <select class="mnav-year-select" id="mnav-year-select" onchange="onYearSelect(this.value)"></select>
-      </div>
+<!-- ══════════ LOGIN SCREEN ══════════ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Revenue Ledger</div>
+    <div class="login-sub">FINANCIAL TRACKER — SIGN IN</div>
+    <div class="login-field">
+      <label>Username</label>
+      <input type="text" id="li-user" placeholder="your username" autocomplete="username">
     </div>
-    <button class="mnav-btn" onclick="stepMonth(1)" title="Next month">&#8594;</button>
-    <div class="sync-dot" id="sync-dot" title="Database status"></div>
-  </div>
-</header>
-
-<!-- ══════════ PAGE 1: MONTHLY ══════════ -->
-<div id="page-monthly" class="page active">
-  <div class="container">
-
-    <!-- Period banner with quick nav -->
-    <div class="period-banner">
-      <span class="pb-label">Viewing Period</span>
-      <span class="pb-val" id="pb-val-monthly">—</span>
-      <div class="pb-nav">
-        <button class="pb-navbtn" onclick="stepMonth(-1)">← Prev Month</button>
-        <button class="pb-navbtn" onclick="stepMonth(1)">Next Month →</button>
-      </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="li-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
-
-    <div class="stores-grid" id="stores-grid"></div>
-    <button class="btn-add" onclick="addStore()"><span style="font-size:18px;line-height:1">+</span>&nbsp;Add Store</button>
-    <hr class="section-divider">
-    <div class="section-title" style="color:var(--accent2)">Monthly Summary</div>
-    <div class="summary-grid">
-      <div class="sc"><span class="sl">Total Revenue</span><span class="sv" id="sum-rev" style="color:var(--text)">$0</span></div>
-      <div class="sc rd"><span class="sl">Payoneer Fees</span><span class="sv" id="sum-pf">$0</span></div>
-      <div class="sc rd"><span class="sl">Supplier Cost</span><span class="sv" id="sum-sup">$0</span></div>
-      <div class="sc rd"><span class="sl">CC / Ads / Services</span><span class="sv" id="sum-cc">$0</span></div>
-      <div class="sc rd"><span class="sl">Agency Funding P2P</span><span class="sv" id="sum-p2p">$0</span></div>
-      <div class="sc rd"><span class="sl">Salaries</span><span class="sv" id="sum-sal">$0</span></div>
-      <div class="sc rd"><span class="sl">Total Expenses</span><span class="sv" id="sum-exp">$0</span></div>
-      <div class="sc hi"><span class="sl">Net Profit</span><span class="sv" id="sum-profit">$0</span></div>
-      <div class="sc bl"><span class="sl">Profit Margin</span><span class="sv" id="sum-margin">0%</span></div>
-    </div>
-    <div class="ext-box">
-      <h3>Profit Extraction Estimator</h3>
-      <div class="slider-row">
-        <label>Min (10%)</label>
-        <input type="range" id="sl-min" min="10" max="20" value="10" step="1" oninput="updateExtraction()">
-        <span class="spct" id="pct-min">10%</span>
-      </div>
-      <div class="slider-row">
-        <label>Max (20%)</label>
-        <input type="range" id="sl-max" min="10" max="20" value="20" step="1" oninput="updateExtraction()">
-        <span class="spct" id="pct-max">20%</span>
-      </div>
-      <div class="ext-results">
-        <div class="ec"><div class="el">Low Extraction</div><div class="ev" id="ext-lo">$0</div><div class="es" id="ext-lo-s">10% of net</div></div>
-        <div class="ec mid"><div class="el">Mid Extraction</div><div class="ev" id="ext-mi">$0</div><div class="es" id="ext-mi-s">15% of net</div></div>
-        <div class="ec hi"><div class="el">High Extraction</div><div class="ev" id="ext-hi">$0</div><div class="es" id="ext-hi-s">20% of net</div></div>
-      </div>
-    </div>
+    <button class="btn-login" id="btn-login" onclick="doLogin()">SIGN IN</button>
+    <div class="login-err" id="login-err"></div>
   </div>
 </div>
 
-<!-- ══════════ PAGE 2: DAILY LEDGER ══════════ -->
-<div id="page-daily" class="page">
-  <div class="container">
+<!-- ══════════ APP SHELL ══════════ -->
+<div id="app">
+  <header>
+    <div class="brand">
+      <h1>Revenue Ledger</h1>
+      <span id="workspace-label">WORKSPACE</span>
+    </div>
+    <nav class="nav-tabs" id="nav-tabs">
+      <!-- tabs injected based on role -->
+    </nav>
+    <div class="month-nav" id="month-nav">
+      <button class="mnav-btn" onclick="stepMonth(-1)">&#8592;</button>
+      <div class="mnav-center">
+        <div class="mnav-month" id="mnav-month-label">JANUARY</div>
+        <select class="mnav-year-select" id="mnav-year-select" onchange="onYearSelect(this.value)"></select>
+      </div>
+      <button class="mnav-btn" onclick="stepMonth(1)">&#8594;</button>
+    </div>
+    <div class="header-user">
+      <span class="user-badge" id="hdr-username"></span>
+      <span class="user-role" id="hdr-role"></span>
+      <button class="btn-logout" onclick="doLogout()">LOGOUT</button>
+      <div class="sync-dot" id="sync-dot"></div>
+    </div>
+  </header>
 
-    <div class="period-banner">
-      <span class="pb-label">Viewing Period</span>
-      <span class="pb-val" id="pb-val-daily">—</span>
-      <div class="pb-nav">
-        <button class="pb-navbtn" onclick="stepMonth(-1)">← Prev Month</button>
-        <button class="pb-navbtn" onclick="stepMonth(1)">Next Month →</button>
+  <!-- PAGE: MONTHLY OVERVIEW (owner only) -->
+  <div id="page-monthly" class="page">
+    <div class="container">
+      <div class="period-banner">
+        <span class="pb-label">Viewing Period</span>
+        <span class="pb-val" id="pb-val-monthly">—</span>
+        <div class="pb-nav">
+          <button class="pb-navbtn" onclick="stepMonth(-1)">← Prev</button>
+          <button class="pb-navbtn" onclick="stepMonth(1)">Next →</button>
+        </div>
+      </div>
+      <div class="stores-grid" id="stores-grid"></div>
+      <button class="btn-add" onclick="addStore()"><span style="font-size:18px;line-height:1">+</span>&nbsp;Add Store</button>
+      <hr class="section-divider">
+      <div class="section-title" style="color:var(--accent2)">Monthly Summary</div>
+      <div class="summary-grid">
+        <div class="sc"><span class="sl">Total Revenue</span><span class="sv" id="sum-rev" style="color:var(--text)">$0</span></div>
+        <div class="sc rd"><span class="sl">Payoneer Fees</span><span class="sv" id="sum-pf">$0</span></div>
+        <div class="sc rd"><span class="sl">Supplier Cost</span><span class="sv" id="sum-sup">$0</span></div>
+        <div class="sc rd"><span class="sl">CC / Ads / Services</span><span class="sv" id="sum-cc">$0</span></div>
+        <div class="sc rd"><span class="sl">Agency Funding P2P</span><span class="sv" id="sum-p2p">$0</span></div>
+        <div class="sc rd"><span class="sl">Salaries</span><span class="sv" id="sum-sal">$0</span></div>
+        <div class="sc rd"><span class="sl">Total Expenses</span><span class="sv" id="sum-exp">$0</span></div>
+        <div class="sc hi"><span class="sl">Net Profit</span><span class="sv" id="sum-profit">$0</span></div>
+        <div class="sc bl"><span class="sl">Profit Margin</span><span class="sv" id="sum-margin">0%</span></div>
+      </div>
+      <div class="ext-box">
+        <h3>Profit Extraction Estimator</h3>
+        <div class="slider-row"><label>Min (10%)</label><input type="range" id="sl-min" min="10" max="20" value="10" step="1" oninput="updateExtraction()"><span class="spct" id="pct-min">10%</span></div>
+        <div class="slider-row"><label>Max (20%)</label><input type="range" id="sl-max" min="10" max="20" value="20" step="1" oninput="updateExtraction()"><span class="spct" id="pct-max">20%</span></div>
+        <div class="ext-results">
+          <div class="ec"><div class="el">Low</div><div class="ev" id="ext-lo">$0</div><div class="es" id="ext-lo-s">10%</div></div>
+          <div class="ec mid"><div class="el">Mid</div><div class="ev" id="ext-mi">$0</div><div class="es" id="ext-mi-s">15%</div></div>
+          <div class="ec hi"><div class="el">High</div><div class="ev" id="ext-hi">$0</div><div class="es" id="ext-hi-s">20%</div></div>
+        </div>
       </div>
     </div>
+  </div>
 
-    <div class="entry-form">
-      <h3>+ New Daily Entry</h3>
-      <div class="efg">
-        <div class="field"><label>Date</label><input type="date" id="e-date"></div>
-        <div class="field"><label>Store</label>
-          <select id="e-store"><option value="">— General / All —</option></select></div>
-        <div class="field"><label>Transaction Type</label>
-          <select id="e-type" onchange="onTypeChange()">
-            <option value="income">📥 Incoming — Store Revenue</option>
-            <option value="supplier">📦 Supplier Payout</option>
-            <option value="ads-payoneer">🌐 Paid Ads — Payoneer P2P</option>
-            <option value="ads-cc">💳 Paid Ads — Credit Card</option>
-            <option value="services-cc">💳 Paid Services — Credit Card</option>
-            <option value="salary">👤 Employee Salary</option>
-          </select></div>
-        <div class="field"><label>Amount ($)</label><input type="number" id="e-amt" min="0" step="0.01" placeholder="0.00"></div>
-        <div class="field"><label>Note (optional)</label><input type="text" id="e-note" placeholder="supplier, platform…"></div>
-        <div><button class="btn-eadd" id="btn-add-entry" onclick="addEntry()">Add Entry</button></div>
+  <!-- PAGE: DAILY LEDGER -->
+  <div id="page-daily" class="page">
+    <div class="container">
+      <div class="period-banner">
+        <span class="pb-label">Viewing Period</span>
+        <span class="pb-val" id="pb-val-daily">—</span>
+        <div class="pb-nav">
+          <button class="pb-navbtn" onclick="stepMonth(-1)">← Prev</button>
+          <button class="pb-navbtn" onclick="stepMonth(1)">Next →</button>
+        </div>
       </div>
-      <div id="note-income" class="inline-note note-warn">Payoneer fee auto-calculated: 1% if ≥ $100, flat $1 if &lt; $100.</div>
-      <div id="note-cc" class="inline-note note-cc">💳 CC charges tracked here daily — or use the monthly lump sum below.</div>
-    </div>
-
-    <div class="eom-box">
-      <h3>💳 End-of-Month Credit Card Totals</h3>
-      <div class="eom-row">
-        <div class="field" style="min-width:180px;"><label>CC Paid Ads Total ($)</label><input type="number" id="eom-ads" min="0" step="0.01" placeholder="0.00"></div>
-        <div class="field" style="min-width:180px;"><label>CC Services Total ($)</label><input type="number" id="eom-svc" min="0" step="0.01" placeholder="0.00"></div>
-        <div style="align-self:end;"><button class="btn-eadd" style="background:var(--purple);" onclick="addEomEntry()">Add as Entry</button></div>
+      <div class="entry-form">
+        <h3>+ New Daily Entry</h3>
+        <div class="efg">
+          <div class="field"><label>Date</label><input type="date" id="e-date"></div>
+          <div class="field"><label>Store</label><select id="e-store"><option value="">— General —</option></select></div>
+          <div class="field"><label>Type</label>
+            <select id="e-type" onchange="onTypeChange()">
+              <option value="income">📥 Incoming — Store Revenue</option>
+              <option value="supplier">📦 Supplier Payout</option>
+              <option value="ads-payoneer">🌐 Paid Ads — Payoneer P2P</option>
+              <option value="ads-cc">💳 Paid Ads — Credit Card</option>
+              <option value="services-cc">💳 Paid Services — Credit Card</option>
+              <option value="salary">👤 Employee Salary</option>
+            </select></div>
+          <div class="field"><label>Amount ($)</label><input type="number" id="e-amt" min="0" step="0.01" placeholder="0.00"></div>
+          <div class="field"><label>Note (optional)</label><input type="text" id="e-note" placeholder="supplier, platform…"></div>
+          <div><button class="btn-eadd" id="btn-add-entry" onclick="addEntry()">Add Entry</button></div>
+        </div>
+        <div id="note-income" class="inline-note note-warn">Payoneer fee auto-calculated: 1% if ≥$100, flat $1 if &lt;$100.</div>
+        <div id="note-cc" class="inline-note note-cc">💳 CC charges tracked daily or use monthly lump sum below.</div>
       </div>
-      <div class="eom-note">Total CC spend at month-end if you didn't log daily. Posts as lump-sum on the last day of the month.</div>
+      <div class="eom-box">
+        <h3>💳 End-of-Month Credit Card Totals</h3>
+        <div class="eom-row">
+          <div class="field" style="min-width:180px;"><label>CC Paid Ads ($)</label><input type="number" id="eom-ads" min="0" step="0.01" placeholder="0.00"></div>
+          <div class="field" style="min-width:180px;"><label>CC Services ($)</label><input type="number" id="eom-svc" min="0" step="0.01" placeholder="0.00"></div>
+          <div style="align-self:end;"><button class="btn-eadd" style="background:var(--purple);" onclick="addEomEntry()">Add as Entry</button></div>
+        </div>
+        <div class="eom-note">Total CC spend at month-end. Posts as lump-sum on last day of month.</div>
+      </div>
+      <div class="ledger-totals">
+        <div class="tc" style="border-color:var(--green)"><div class="tl">Total Incoming</div><div class="tv" id="lt-in" style="color:var(--green)">$0.00</div></div>
+        <div class="tc" style="border-color:var(--warn)"><div class="tl">Payoneer Fees</div><div class="tv" id="lt-fee" style="color:var(--warn)">$0.00</div></div>
+        <div class="tc" style="border-color:var(--danger)"><div class="tl">Supplier Payouts</div><div class="tv" id="lt-sup" style="color:var(--danger)">$0.00</div></div>
+        <div class="tc" style="border-color:var(--accent2)"><div class="tl">Ads Payoneer P2P</div><div class="tv" id="lt-adsp2p" style="color:var(--accent2)">$0.00</div></div>
+        <div class="tc" style="border-color:var(--purple)"><div class="tl">Ads + Services CC</div><div class="tv" id="lt-cc" style="color:var(--purple)">$0.00</div></div>
+        <div class="tc" style="border-color:var(--danger)"><div class="tl">Salaries</div><div class="tv" id="lt-sal" style="color:var(--danger)">$0.00</div></div>
+        <div class="tc" style="border-color:var(--danger)"><div class="tl">Total Expenses</div><div class="tv" id="lt-exp" style="color:var(--danger)">$0.00</div></div>
+        <div class="tc" style="border-color:var(--accent)"><div class="tl">Net (after fees)</div><div class="tv" id="lt-net" style="color:var(--accent)">$0.00</div></div>
+      </div>
+      <div class="ltable-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Store</th><th>Type</th><th>Gross</th><th>Payoneer Fee</th><th>Net</th><th>Note</th><th>By</th><th></th></tr></thead>
+          <tbody id="ltbody"><tr><td colspan="9" class="empty-state">Loading…</td></tr></tbody>
+        </table>
+      </div>
     </div>
+  </div>
 
-    <div class="ledger-totals">
-      <div class="tc" style="border-color:var(--green)"><div class="tl">Total Incoming</div><div class="tv" id="lt-in" style="color:var(--green)">$0.00</div></div>
-      <div class="tc" style="border-color:var(--warn)"><div class="tl">Payoneer Fees</div><div class="tv" id="lt-fee" style="color:var(--warn)">$0.00</div></div>
-      <div class="tc" style="border-color:var(--danger)"><div class="tl">Supplier Payouts</div><div class="tv" id="lt-sup" style="color:var(--danger)">$0.00</div></div>
-      <div class="tc" style="border-color:var(--accent2)"><div class="tl">Ads Payoneer P2P</div><div class="tv" id="lt-adsp2p" style="color:var(--accent2)">$0.00</div></div>
-      <div class="tc" style="border-color:var(--purple)"><div class="tl">Ads + Services CC</div><div class="tv" id="lt-cc" style="color:var(--purple)">$0.00</div></div>
-      <div class="tc" style="border-color:var(--danger)"><div class="tl">Salaries</div><div class="tv" id="lt-sal" style="color:var(--danger)">$0.00</div></div>
-      <div class="tc" style="border-color:var(--danger)"><div class="tl">Total Expenses</div><div class="tv" id="lt-exp" style="color:var(--danger)">$0.00</div></div>
-      <div class="tc" style="border-color:var(--accent)"><div class="tl">Net (after fees)</div><div class="tv" id="lt-net" style="color:var(--accent)">$0.00</div></div>
-    </div>
-
-    <div class="ltable-wrap">
-      <table>
-        <thead>
-          <tr><th>Date</th><th>Store</th><th>Type</th><th>Gross Amount</th><th>Payoneer Fee</th><th>Net Amount</th><th>Note</th><th></th></tr>
-        </thead>
-        <tbody id="ltbody"><tr><td colspan="8" class="empty-state">Loading…</td></tr></tbody>
-      </table>
+  <!-- PAGE: ADMIN (owner only) -->
+  <div id="page-admin" class="page">
+    <div class="container">
+      <div class="section-title" style="color:var(--purple)">Team Management</div>
+      <div class="admin-grid">
+        <!-- Current users -->
+        <div class="admin-card">
+          <h3>Your Team</h3>
+          <div class="user-list" id="user-list">
+            <div class="empty-state" style="padding:20px;">Loading…</div>
+          </div>
+        </div>
+        <!-- Add bookkeeper -->
+        <div class="admin-card">
+          <h3>Add Bookkeeper</h3>
+          <div class="add-user-form">
+            <div class="field"><label>Username</label><input type="text" id="new-username" placeholder="e.g. sarah_books"></div>
+            <div class="field"><label>Password</label><input type="password" id="new-password" placeholder="choose a password"></div>
+            <button class="btn-create-user" onclick="createBookkeeper()">Create Bookkeeper Account</button>
+          </div>
+          <div style="margin-top:14px;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);line-height:1.6;">
+            Bookkeepers can only access the Daily Ledger.<br>
+            They cannot see profits, summaries, or stores.
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
-// ── SUPABASE ────────────────────────────────────
-const SUPABASE_URL = 'https://amamwkiqtsioyhvgjyum.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_TgA8T4XcmRSDz2c9fNkPIQ_2FaykKrb';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// ── SUPABASE ─────────────────────────────────────
+const SUPABASE_URL='https://amamwkiqtsioyhvgjyum.supabase.co';
+const SUPABASE_KEY='sb_publishable_TgA8T4XcmRSDz2c9fNkPIQ_2FaykKrb';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 // ── STATE ────────────────────────────────────────
-let stores = [], entries = [];
-const MONTHS = ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
-
-// Active period — single source of truth
-let activeYear  = new Date().getFullYear();
-let activeMonth = new Date().getMonth() + 1; // 1-based
+let currentUser=null; // {id, username, role, workspace_id}
+let stores=[], entries=[];
+const MONTHS=['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+let activeYear=new Date().getFullYear(), activeMonth=new Date().getMonth()+1;
 
 // ── HELPERS ──────────────────────────────────────
 let toastTimer;
-function toast(msg, type='ok') {
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.className='show '+type;
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>t.className='',3000);
-}
-function setSyncing(s) {
-  const d=document.getElementById('sync-dot');
-  d.className='sync-dot'+(s==='syncing'?' syncing':s==='err'?' err':'');
-  d.title=s==='syncing'?'Saving…':s==='err'?'Connection error':'Connected';
-}
-function showLoading(v){document.getElementById('loading').classList.toggle('hidden',!v);}
-function currentMonthStr(){return `${activeYear}-${String(activeMonth).padStart(2,'0')}`;}
+function toast(msg,type='ok'){const t=document.getElementById('toast');t.textContent=msg;t.className='show '+type;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.className='',3500);}
+function setSyncing(s){const d=document.getElementById('sync-dot');d.className='sync-dot'+(s==='syncing'?' syncing':s==='err'?' err':'');}
+function showLoading(v,msg='LOADING…'){document.getElementById('loading').classList.toggle('hidden',!v);document.getElementById('loading-msg').textContent=msg;}
+function currentMonthStr(){return`${activeYear}-${String(activeMonth).padStart(2,'0')}`;}
 function pyFee(r){r=parseFloat(r)||0;if(r<=0)return 0;return r<100?1:r*.01;}
 
-// ── MONTH NAVIGATOR ──────────────────────────────
-function buildYearSelect() {
-  const sel = document.getElementById('mnav-year-select');
-  sel.innerHTML = '';
-  const startYear = 2024;
-  const endYear   = new Date().getFullYear() + 2;
-  for (let y = endYear; y >= startYear; y--) {
-    const o = document.createElement('option');
-    o.value = y; o.textContent = y;
-    if (y === activeYear) o.selected = true;
-    sel.appendChild(o);
-  }
+// ── PASSWORD HASH (SHA-256) ───────────────────────
+async function sha256(str){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 
-function updateNavUI() {
-  document.getElementById('mnav-month-label').textContent = MONTHS[activeMonth - 1];
-  document.getElementById('mnav-year-select').value = activeYear;
-  const label = MONTHS[activeMonth-1] + ' ' + activeYear;
-  document.getElementById('pb-val-monthly').textContent = label;
-  document.getElementById('pb-val-daily').textContent   = label;
-  // Keep the date entry defaulted to a valid day in the active month
-  const today = new Date();
-  if (today.getFullYear() === activeYear && today.getMonth()+1 === activeMonth) {
-    document.getElementById('e-date').value = today.toISOString().split('T')[0];
+// ── SESSION (localStorage) ───────────────────────
+function saveSession(user){localStorage.setItem('rl_session',JSON.stringify(user));}
+function loadSession(){try{return JSON.parse(localStorage.getItem('rl_session'));}catch{return null;}}
+function clearSession(){localStorage.removeItem('rl_session');}
+
+// ── LOGIN ────────────────────────────────────────
+async function doLogin(){
+  const username=document.getElementById('li-user').value.trim();
+  const password=document.getElementById('li-pass').value;
+  const errEl=document.getElementById('login-err');
+  const btn=document.getElementById('btn-login');
+  errEl.textContent='';
+  if(!username||!password){errEl.textContent='Please enter username and password.';return;}
+  btn.disabled=true;btn.textContent='SIGNING IN…';
+  const hash=await sha256(password);
+  const {data,error}=await sb.from('users').select('*').eq('username',username).eq('password_hash',hash).single();
+  btn.disabled=false;btn.textContent='SIGN IN';
+  if(error||!data){errEl.textContent='Incorrect username or password.';return;}
+  currentUser=data;
+  saveSession(data);
+  launchApp();
+}
+
+function doLogout(){
+  clearSession();
+  currentUser=null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('li-user').value='';
+  document.getElementById('li-pass').value='';
+  document.getElementById('login-err').textContent='';
+}
+
+// ── LAUNCH APP ───────────────────────────────────
+function launchApp(){
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app').style.display='block';
+
+  // Header user info
+  document.getElementById('hdr-username').textContent=currentUser.username;
+  const roleEl=document.getElementById('hdr-role');
+  roleEl.textContent=currentUser.role;
+  roleEl.className='user-role role-'+currentUser.role;
+  document.getElementById('workspace-label').textContent=currentUser.username.toUpperCase()+"'S WORKSPACE";
+
+  // Build nav tabs based on role
+  const nav=document.getElementById('nav-tabs');
+  nav.innerHTML='';
+  if(currentUser.role==='owner'){
+    nav.innerHTML=`
+      <button class="nav-tab active" onclick="showPage('monthly',this)">Monthly Overview</button>
+      <button class="nav-tab" onclick="showPage('daily',this)">Daily Ledger</button>
+      <button class="nav-tab" onclick="showPage('admin',this);loadAdminPanel()">Team</button>`;
+    document.getElementById('month-nav').style.display='flex';
   } else {
-    document.getElementById('e-date').value = `${activeYear}-${String(activeMonth).padStart(2,'0')}-01`;
+    // bookkeeper: only daily ledger, no month nav needed for switching
+    nav.innerHTML=`<button class="nav-tab active" onclick="showPage('daily',this)">Daily Ledger</button>`;
+    document.getElementById('month-nav').style.display='flex';
+    // hide the period banner buttons for bookkeeper? No — let them filter by month
   }
-}
 
-function stepMonth(dir) {
-  activeMonth += dir;
-  if (activeMonth > 12) { activeMonth = 1;  activeYear++; }
-  if (activeMonth < 1)  { activeMonth = 12; activeYear--; }
-  // Clamp year in select if needed
-  const sel = document.getElementById('mnav-year-select');
-  const min = parseInt(sel.options[sel.options.length-1].value);
-  const max = parseInt(sel.options[0].value);
-  if (activeYear < min) { activeYear = min; activeMonth = 1; }
-  if (activeYear > max) { activeYear = max; activeMonth = 12; }
   buildYearSelect();
   updateNavUI();
-  loadAll();
-}
-
-function onYearSelect(y) {
-  activeYear = parseInt(y);
-  buildYearSelect();
-  updateNavUI();
+  if(currentUser.role==='owner'){
+    showPage('monthly', nav.querySelector('.nav-tab'));
+  } else {
+    showPage('daily', nav.querySelector('.nav-tab'));
+  }
   loadAll();
 }
 
 // ── NAVIGATION ───────────────────────────────────
-function showPage(pg, btn) {
+function showPage(pg,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+pg).classList.add('active');
-  btn.classList.add('active');
+  if(btn)btn.classList.add('active');
 }
 
-// ── LOAD ─────────────────────────────────────────
-async function loadAll() {
-  showLoading(true);
-  await Promise.all([loadStores(), loadEntries()]);
+// ── MONTH NAV ────────────────────────────────────
+function buildYearSelect(){
+  const sel=document.getElementById('mnav-year-select');sel.innerHTML='';
+  const start=2024,end=new Date().getFullYear()+2;
+  for(let y=end;y>=start;y--){const o=document.createElement('option');o.value=y;o.textContent=y;if(y===activeYear)o.selected=true;sel.appendChild(o);}
+}
+function updateNavUI(){
+  document.getElementById('mnav-month-label').textContent=MONTHS[activeMonth-1];
+  document.getElementById('mnav-year-select').value=activeYear;
+  const label=MONTHS[activeMonth-1]+' '+activeYear;
+  const m=document.getElementById('pb-val-monthly');const d=document.getElementById('pb-val-daily');
+  if(m)m.textContent=label;if(d)d.textContent=label;
+  const today=new Date();
+  document.getElementById('e-date').value=(today.getFullYear()===activeYear&&today.getMonth()+1===activeMonth)?today.toISOString().split('T')[0]:`${activeYear}-${String(activeMonth).padStart(2,'0')}-01`;
+}
+function stepMonth(dir){
+  activeMonth+=dir;
+  if(activeMonth>12){activeMonth=1;activeYear++;}
+  if(activeMonth<1){activeMonth=12;activeYear--;}
+  buildYearSelect();updateNavUI();loadAll();
+}
+function onYearSelect(y){activeYear=parseInt(y);buildYearSelect();updateNavUI();loadAll();}
+
+// ── LOAD DATA ────────────────────────────────────
+async function loadAll(){
+  showLoading(true,'LOADING DATA…');
+  await Promise.all([loadStores(),loadEntries()]);
   showLoading(false);
-}
-
-async function loadStores() {
-  const {data,error} = await sb.from('stores').select('*').eq('month',currentMonthStr()).order('created_at');
-  if(error){toast('Error loading stores: '+error.message,'err');setSyncing('err');return;}
-  stores = data||[];
-  renderAllStoreCards();
-  updateSummary();
-  syncStoreDropdown();
   setSyncing('ok');
 }
 
-async function loadEntries() {
-  const {data,error} = await sb.from('entries').select('*').eq('month',currentMonthStr()).order('date').order('created_at');
-  if(error){toast('Error loading entries: '+error.message,'err');return;}
-  entries = data||[];
+async function loadStores(){
+  if(currentUser.role==='bookkeeper'){return;} // bookkeepers don't need stores
+  const {data,error}=await sb.from('stores').select('*').eq('month',currentMonthStr()).eq('workspace_id',currentUser.workspace_id).order('created_at');
+  if(error){toast('Error loading stores','err');setSyncing('err');return;}
+  stores=data||[];
+  renderAllStoreCards();
+  updateSummary();
+  syncStoreDropdown();
+}
+
+async function loadEntries(){
+  const {data,error}=await sb.from('entries').select('*').eq('month',currentMonthStr()).eq('workspace_id',currentUser.workspace_id).order('date').order('created_at');
+  if(error){toast('Error loading entries','err');return;}
+  entries=data||[];
   renderLedger();
 }
 
-// ── PAGE 1: STORES ───────────────────────────────
+// ── PAGE 1: STORES (owner only) ──────────────────
 function renderAllStoreCards(){
   document.getElementById('stores-grid').innerHTML='';
   stores.forEach(s=>renderStoreCard(s));
 }
-
 function renderStoreCard(s){
   const g=document.getElementById('stores-grid');
-  const d=document.createElement('div');
-  d.className='store-card';d.id='sc-'+s.id;
+  const d=document.createElement('div');d.className='store-card';d.id='sc-'+s.id;
   d.innerHTML=`
     <div class="store-header">
       <div class="store-dot"></div>
-      <input class="store-name-input" placeholder="STORE NAME" value="${s.name||''}"
-        onchange="updateStoreField('${s.id}','name',this.value)">
+      <input class="store-name-input" placeholder="STORE NAME" value="${s.name||''}" onchange="updateStoreField('${s.id}','name',this.value)">
       <button class="btn-rm" onclick="removeStore('${s.id}')">✕</button>
     </div>
     <div class="store-body">
       <div class="field-row">
-        <div class="field"><label>Gross Revenue ($)</label>
-          <input type="number" min="0" step="0.01" placeholder="0.00" value="${s.revenue||''}"
-            onchange="updateStoreField('${s.id}','revenue',this.value)"></div>
-        <div class="field"><label>Supplier Cost ($)</label>
-          <input type="number" min="0" step="0.01" placeholder="0.00" value="${s.supplier||''}"
-            onchange="updateStoreField('${s.id}','supplier',this.value)"></div>
+        <div class="field"><label>Gross Revenue ($)</label><input type="number" min="0" step="0.01" placeholder="0.00" value="${s.revenue||''}" onchange="updateStoreField('${s.id}','revenue',this.value)"></div>
+        <div class="field"><label>Supplier Cost ($)</label><input type="number" min="0" step="0.01" placeholder="0.00" value="${s.supplier||''}" onchange="updateStoreField('${s.id}','supplier',this.value)"></div>
       </div>
       <div class="fee-note" id="fn-${s.id}">Payoneer fee: —</div>
       <div class="field-row">
-        <div class="field"><label>CC / Paid Ads / Services ($)</label>
-          <input type="number" min="0" step="0.01" placeholder="0.00" value="${s.cc||''}"
-            onchange="updateStoreField('${s.id}','cc',this.value)"></div>
-        <div class="field"><label>Agency Funding P2P ($)</label>
-          <input type="number" min="0" step="0.01" placeholder="0.00" value="${s.p2p||''}"
-            onchange="updateStoreField('${s.id}','p2p',this.value)"></div>
+        <div class="field"><label>CC / Paid Ads / Services ($)</label><input type="number" min="0" step="0.01" placeholder="0.00" value="${s.cc||''}" onchange="updateStoreField('${s.id}','cc',this.value)"></div>
+        <div class="field"><label>Agency Funding P2P ($)</label><input type="number" min="0" step="0.01" placeholder="0.00" value="${s.p2p||''}" onchange="updateStoreField('${s.id}','p2p',this.value)"></div>
       </div>
-      <div class="p2p-note">Payoneer-to-Payoneer agency/marketing — no extra fee on P2P transfers.</div>
+      <div class="p2p-note">P2P agency/marketing funding — no extra Payoneer fee.</div>
       <div class="field-row">
-        <div class="field"><label>Employee Salaries ($)</label>
-          <input type="number" min="0" step="0.01" placeholder="0.00" value="${s.salary||''}"
-            onchange="updateStoreField('${s.id}','salary',this.value)"></div>
+        <div class="field"><label>Employee Salaries ($)</label><input type="number" min="0" step="0.01" placeholder="0.00" value="${s.salary||''}" onchange="updateStoreField('${s.id}','salary',this.value)"></div>
       </div>
       <div class="store-result">
         <div class="res-item"><span class="res-label">After Payoneer Fee</span><span class="res-val a2" id="ra-${s.id}">—</span></div>
@@ -487,17 +575,14 @@ function renderStoreCard(s){
         <div class="res-item"><span class="res-label">Margin</span><span class="res-val" id="rm-${s.id}">—</span></div>
       </div>
     </div>`;
-  g.appendChild(d);
-  recalcStore(s.id);
+  g.appendChild(d);recalcStore(s.id);
 }
-
 async function addStore(){
   setSyncing('syncing');
-  const {data,error}=await sb.from('stores').insert([{name:'STORE '+(stores.length+1),month:currentMonthStr(),revenue:0,supplier:0,cc:0,p2p:0,salary:0}]).select().single();
+  const {data,error}=await sb.from('stores').insert([{name:'STORE '+(stores.length+1),month:currentMonthStr(),workspace_id:currentUser.workspace_id,revenue:0,supplier:0,cc:0,p2p:0,salary:0}]).select().single();
   if(error){toast('Could not add store: '+error.message,'err');setSyncing('err');return;}
   stores.push(data);renderStoreCard(data);syncStoreDropdown();updateSummary();setSyncing('ok');toast('Store added','ok');
 }
-
 async function removeStore(id){
   if(!confirm('Remove this store?'))return;
   setSyncing('syncing');
@@ -507,7 +592,6 @@ async function removeStore(id){
   document.getElementById('sc-'+id)?.remove();
   syncStoreDropdown();updateSummary();setSyncing('ok');toast('Store removed','ok');
 }
-
 const debounceTimers={};
 async function updateStoreField(id,field,value){
   const s=stores.find(x=>x.id===id);if(!s)return;
@@ -517,71 +601,54 @@ async function updateStoreField(id,field,value){
     setSyncing('syncing');
     const u={};u[field]=field==='name'?value:(parseFloat(value)||0);
     const {error}=await sb.from('stores').update(u).eq('id',id);
-    if(error){toast('Save failed: '+error.message,'err');setSyncing('err');}
-    else setSyncing('ok');
+    if(error){toast('Save failed','err');setSyncing('err');}else setSyncing('ok');
   },600);
 }
-
 function recalcStore(id){
   const s=stores.find(x=>x.id===id);if(!s)return;
-  const rev=parseFloat(s.revenue)||0,fee=pyFee(rev),afterFee=rev-fee;
+  const rev=parseFloat(s.revenue)||0,fee=pyFee(rev),af=rev-fee;
   const sup=parseFloat(s.supplier)||0,cc=parseFloat(s.cc)||0,p2p=parseFloat(s.p2p)||0,sal=parseFloat(s.salary)||0;
   const exp=fee+sup+cc+p2p+sal,net=rev-exp,mg=rev>0?(net/rev*100):0;
   const fn=document.getElementById('fn-'+id);
-  if(fn)fn.textContent=rev<=0?'Payoneer fee: —':rev<100?`Payoneer fee: $1.00 (flat — under $100)`:`Payoneer fee: $${fee.toFixed(2)} (1% of $${rev.toFixed(2)})`;
+  if(fn)fn.textContent=rev<=0?'Payoneer fee: —':rev<100?`Payoneer fee: $1.00 (flat)`:`Payoneer fee: $${fee.toFixed(2)} (1%)`;
   const st=(eid,v,c)=>{const el=document.getElementById(eid);if(el){el.textContent=v;if(c)el.className='res-val '+c;}};
-  st('ra-'+id,rev>0?'$'+afterFee.toFixed(2):'—','a2');
+  st('ra-'+id,rev>0?'$'+af.toFixed(2):'—','a2');
   st('re-'+id,exp>0?'$'+exp.toFixed(2):'—','red');
   st('rn-'+id,rev>0?(net>=0?'$'+net.toFixed(2):'-$'+Math.abs(net).toFixed(2)):'—',net>=0?'green':'red');
   st('rm-'+id,rev>0?mg.toFixed(1)+'%':'—',mg>=0?'green':'red');
 }
-
 function updateSummary(){
   let tR=0,tF=0,tS=0,tC=0,tP=0,tSa=0;
   stores.forEach(s=>{const r=parseFloat(s.revenue)||0;tR+=r;tF+=pyFee(r);tS+=parseFloat(s.supplier)||0;tC+=parseFloat(s.cc)||0;tP+=parseFloat(s.p2p)||0;tSa+=parseFloat(s.salary)||0;});
   const exp=tF+tS+tC+tP+tSa,net=tR-exp,mg=tR>0?(net/tR*100):0;
   const f=v=>'$'+v.toFixed(2);
-  document.getElementById('sum-rev').textContent=f(tR);
-  document.getElementById('sum-pf').textContent=f(tF);
-  document.getElementById('sum-sup').textContent=f(tS);
-  document.getElementById('sum-cc').textContent=f(tC);
-  document.getElementById('sum-p2p').textContent=f(tP);
-  document.getElementById('sum-sal').textContent=f(tSa);
-  document.getElementById('sum-exp').textContent=f(exp);
-  const pe=document.getElementById('sum-profit');
-  pe.textContent=net>=0?f(net):'-$'+Math.abs(net).toFixed(2);
-  pe.style.color=net>=0?'var(--accent)':'var(--danger)';
+  ['sum-rev','sum-pf','sum-sup','sum-cc','sum-p2p','sum-sal','sum-exp'].forEach((id,i)=>{document.getElementById(id).textContent=f([tR,tF,tS,tC,tP,tSa,exp][i]);});
+  const pe=document.getElementById('sum-profit');pe.textContent=net>=0?f(net):'-$'+Math.abs(net).toFixed(2);pe.style.color=net>=0?'var(--accent)':'var(--danger)';
   document.getElementById('sum-margin').textContent=mg.toFixed(1)+'%';
   updateExtraction(net);
 }
-
 function updateExtraction(net){
-  const mn=parseInt(document.getElementById('sl-min').value);
-  const mx=parseInt(document.getElementById('sl-max').value);
-  const mid=Math.round((mn+mx)/2);
-  document.getElementById('pct-min').textContent=mn+'%';
-  document.getElementById('pct-max').textContent=mx+'%';
+  const mn=parseInt(document.getElementById('sl-min').value),mx=parseInt(document.getElementById('sl-max').value),mid=Math.round((mn+mx)/2);
+  document.getElementById('pct-min').textContent=mn+'%';document.getElementById('pct-max').textContent=mx+'%';
   const fmt=v=>v>=0?'$'+v.toFixed(2):'-$'+Math.abs(v).toFixed(2);
-  document.getElementById('ext-lo').textContent=fmt(net*mn/100);document.getElementById('ext-lo-s').textContent=mn+'% of net profit';
-  document.getElementById('ext-mi').textContent=fmt(net*mid/100);document.getElementById('ext-mi-s').textContent=mid+'% of net profit';
-  document.getElementById('ext-hi').textContent=fmt(net*mx/100);document.getElementById('ext-hi-s').textContent=mx+'% of net profit';
+  document.getElementById('ext-lo').textContent=fmt(net*mn/100);document.getElementById('ext-lo-s').textContent=mn+'% of net';
+  document.getElementById('ext-mi').textContent=fmt(net*mid/100);document.getElementById('ext-mi-s').textContent=mid+'% of net';
+  document.getElementById('ext-hi').textContent=fmt(net*mx/100);document.getElementById('ext-hi-s').textContent=mx+'% of net';
 }
 
-// ── PAGE 2: LEDGER ───────────────────────────────
+// ── PAGE 2: DAILY LEDGER ─────────────────────────
 function syncStoreDropdown(){
   const sel=document.getElementById('e-store'),cur=sel.value;
-  sel.innerHTML='<option value="">— General / All —</option>';
+  sel.innerHTML='<option value="">— General —</option>';
   stores.forEach(s=>{const o=document.createElement('option');o.value=s.id;o.textContent=s.name||'Store';sel.appendChild(o);});
   sel.value=cur;
 }
-
 function onTypeChange(){
   const t=document.getElementById('e-type').value;
   document.getElementById('note-income').style.display=t==='income'?'block':'none';
   document.getElementById('note-cc').style.display=(t==='ads-cc'||t==='services-cc')?'block':'none';
 }
-
-const typeLabels={income:'Incoming Revenue',supplier:'Supplier Payout','ads-payoneer':'Ads – Payoneer P2P','ads-cc':'Paid Ads – CC','services-cc':'Paid Services – CC',salary:'Employee Salary','cc-eom':'CC End-of-Month'};
+const typeLabels={income:'Incoming',supplier:'Supplier Payout','ads-payoneer':'Ads–Payoneer P2P','ads-cc':'Paid Ads–CC','services-cc':'Services–CC',salary:'Salary','cc-eom':'CC EOM'};
 const badgeClass={income:'b-income',supplier:'b-supplier','ads-payoneer':'b-ads-payoneer','ads-cc':'b-ads-cc','services-cc':'b-services-cc',salary:'b-salary','cc-eom':'b-cc-eom'};
 
 async function addEntry(){
@@ -590,62 +657,57 @@ async function addEntry(){
   const type=document.getElementById('e-type').value;
   const amt=parseFloat(document.getElementById('e-amt').value);
   const note=document.getElementById('e-note').value.trim();
-  if(!date){toast('Please pick a date.','err');return;}
-  if(!amt||amt<=0){toast('Enter a valid amount.','err');return;}
-  // Warn if date doesn't match active month
-  const entryMonth=date.slice(0,7);
-  if(entryMonth!==currentMonthStr()){toast('⚠ Date doesn\'t match current period — saving anyway.','inf');}
+  if(!date){toast('Pick a date','err');return;}
+  if(!amt||amt<=0){toast('Enter a valid amount','err');return;}
   const sName=storeId?(stores.find(s=>s.id===storeId)?.name||'Store'):'—';
   const fee=type==='income'?pyFee(amt):0;
-  const btn=document.getElementById('btn-add-entry');
-  btn.disabled=true;setSyncing('syncing');
-  const {data,error}=await sb.from('entries').insert([{date,store_id:storeId||null,store_name:sName,type,amount:amt,fee,note:note||null,month:currentMonthStr()}]).select().single();
+  const btn=document.getElementById('btn-add-entry');btn.disabled=true;setSyncing('syncing');
+  const {data,error}=await sb.from('entries').insert([{
+    date,store_id:storeId||null,store_name:sName,type,amount:amt,fee,
+    note:note||null,month:currentMonthStr(),
+    workspace_id:currentUser.workspace_id,
+    added_by:currentUser.username
+  }]).select().single();
   btn.disabled=false;
   if(error){toast('Could not save: '+error.message,'err');setSyncing('err');return;}
   entries.push(data);
-  document.getElementById('e-amt').value='';
-  document.getElementById('e-note').value='';
+  document.getElementById('e-amt').value='';document.getElementById('e-note').value='';
   renderLedger();setSyncing('ok');toast('Entry saved ✓','ok');
 }
-
 async function addEomEntry(){
   const ads=parseFloat(document.getElementById('eom-ads').value)||0;
   const svc=parseFloat(document.getElementById('eom-svc').value)||0;
-  if(ads===0&&svc===0){toast('Enter at least one CC amount.','err');return;}
-  const [yr,mo]=[activeYear,activeMonth];
-  const last=new Date(yr,mo,0).getDate();
+  if(ads===0&&svc===0){toast('Enter at least one CC amount','err');return;}
+  const last=new Date(activeYear,activeMonth,0).getDate();
   const date=`${currentMonthStr()}-${String(last).padStart(2,'0')}`;
   const rows=[];
-  if(ads>0)rows.push({date,store_id:null,store_name:'—',type:'cc-eom',amount:ads,fee:0,note:'CC Paid Ads (EOM lump sum)',month:currentMonthStr()});
-  if(svc>0)rows.push({date,store_id:null,store_name:'—',type:'cc-eom',amount:svc,fee:0,note:'CC Services (EOM lump sum)',month:currentMonthStr()});
+  if(ads>0)rows.push({date,store_id:null,store_name:'—',type:'cc-eom',amount:ads,fee:0,note:'CC Paid Ads (EOM)',month:currentMonthStr(),workspace_id:currentUser.workspace_id,added_by:currentUser.username});
+  if(svc>0)rows.push({date,store_id:null,store_name:'—',type:'cc-eom',amount:svc,fee:0,note:'CC Services (EOM)',month:currentMonthStr(),workspace_id:currentUser.workspace_id,added_by:currentUser.username});
   setSyncing('syncing');
   const {data,error}=await sb.from('entries').insert(rows).select();
-  if(error){toast('Could not save: '+error.message,'err');setSyncing('err');return;}
+  if(error){toast('Could not save','err');setSyncing('err');return;}
   entries.push(...data);
   document.getElementById('eom-ads').value='';document.getElementById('eom-svc').value='';
   renderLedger();setSyncing('ok');toast('CC entries saved ✓','ok');
 }
-
 async function delEntry(id){
   setSyncing('syncing');
   const {error}=await sb.from('entries').delete().eq('id',id);
-  if(error){toast('Could not delete: '+error.message,'err');setSyncing('err');return;}
-  entries=entries.filter(e=>e.id!==id);
-  renderLedger();setSyncing('ok');toast('Entry deleted','inf');
+  if(error){toast('Could not delete','err');setSyncing('err');return;}
+  entries=entries.filter(e=>e.id!==id);renderLedger();setSyncing('ok');toast('Deleted','inf');
 }
-
 function renderLedger(){
   const rows=[...entries].sort((a,b)=>a.date.localeCompare(b.date));
   let tIn=0,tFee=0,tSup=0,tAdsP2P=0,tCC=0,tSal=0;
   rows.forEach(e=>{
-    if(e.type==='income'){tIn+=Number(e.amount);tFee+=Number(e.fee);}
-    else if(e.type==='supplier')tSup+=Number(e.amount);
-    else if(e.type==='ads-payoneer')tAdsP2P+=Number(e.amount);
-    else if(e.type==='ads-cc'||e.type==='services-cc'||e.type==='cc-eom')tCC+=Number(e.amount);
-    else if(e.type==='salary')tSal+=Number(e.amount);
+    if(e.type==='income'){tIn+=+e.amount;tFee+=+e.fee;}
+    else if(e.type==='supplier')tSup+=+e.amount;
+    else if(e.type==='ads-payoneer')tAdsP2P+=+e.amount;
+    else if(['ads-cc','services-cc','cc-eom'].includes(e.type))tCC+=+e.amount;
+    else if(e.type==='salary')tSal+=+e.amount;
   });
   const tExp=tFee+tSup+tAdsP2P+tCC+tSal,net=tIn-tExp;
-  const f=v=>'$'+Number(v).toFixed(2);
+  const f=v=>'$'+(+v).toFixed(2);
   document.getElementById('lt-in').textContent=f(tIn);
   document.getElementById('lt-fee').textContent=f(tFee);
   document.getElementById('lt-sup').textContent=f(tSup);
@@ -653,40 +715,94 @@ function renderLedger(){
   document.getElementById('lt-cc').textContent=f(tCC);
   document.getElementById('lt-sal').textContent=f(tSal);
   document.getElementById('lt-exp').textContent=f(tExp);
-  const ne=document.getElementById('lt-net');
-  ne.textContent=net>=0?f(net):'-$'+Math.abs(net).toFixed(2);
-  ne.style.color=net>=0?'var(--accent)':'var(--danger)';
+  const ne=document.getElementById('lt-net');ne.textContent=net>=0?f(net):'-$'+Math.abs(net).toFixed(2);ne.style.color=net>=0?'var(--accent)':'var(--danger)';
   const tbody=document.getElementById('ltbody');
-  if(rows.length===0){tbody.innerHTML='<tr><td colspan="8" class="empty-state">No entries for '+MONTHS[activeMonth-1]+' '+activeYear+'. Log your first transaction above.</td></tr>';return;}
+  if(!rows.length){tbody.innerHTML=`<tr><td colspan="9" class="empty-state">No entries for ${MONTHS[activeMonth-1]} ${activeYear}.</td></tr>`;return;}
   let html='',lastDate=null;
   rows.forEach(e=>{
     if(e.date!==lastDate){
       const d=new Date(e.date+'T00:00:00');
-      html+=`<tr class="day-row"><td colspan="8">${d.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</td></tr>`;
+      html+=`<tr class="day-row"><td colspan="9">${d.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</td></tr>`;
       lastDate=e.date;
     }
     const isExp=e.type!=='income';
-    const netAmt=e.type==='income'?(Number(e.amount)-Number(e.fee)):Number(e.amount);
+    const netAmt=e.type==='income'?(+e.amount - +e.fee):+e.amount;
     html+=`<tr>
       <td class="td-date">${e.date}</td>
       <td class="td-store">${e.store_name||'—'}</td>
       <td><span class="badge ${badgeClass[e.type]||''}">${typeLabels[e.type]||e.type}</span></td>
-      <td class="${isExp?'td-out':'td-in'}">${isExp?'−':'＋'}$${Number(e.amount).toFixed(2)}</td>
-      <td class="td-fee">${Number(e.fee)>0?'−$'+Number(e.fee).toFixed(2):'—'}</td>
+      <td class="${isExp?'td-out':'td-in'}">${isExp?'−':'＋'}$${(+e.amount).toFixed(2)}</td>
+      <td class="td-fee">${+e.fee>0?'−$'+(+e.fee).toFixed(2):'—'}</td>
       <td class="${isExp?'td-out':'td-in'} td-bold">${isExp?'−':''}$${netAmt.toFixed(2)}</td>
       <td class="td-note" title="${e.note||''}">${e.note||'—'}</td>
-      <td><button class="btn-del" onclick="delEntry('${e.id}')" title="Delete">✕</button></td>
+      <td style="color:var(--muted);font-size:11px;">${e.added_by||'—'}</td>
+      <td><button class="btn-del" onclick="delEntry('${e.id}')">✕</button></td>
     </tr>`;
   });
   tbody.innerHTML=html;
 }
 
+// ── PAGE 3: ADMIN PANEL (owner only) ─────────────
+async function loadAdminPanel(){
+  document.getElementById('user-list').innerHTML='<div class="empty-state" style="padding:16px;">Loading…</div>';
+  const {data,error}=await sb.from('users').select('id,username,role,created_at').eq('workspace_id',currentUser.workspace_id).order('created_at');
+  if(error){toast('Could not load team','err');return;}
+  const users=data||[];
+  if(!users.length){document.getElementById('user-list').innerHTML='<div class="empty-state" style="padding:16px;">No team members yet.</div>';return;}
+  document.getElementById('user-list').innerHTML=users.map(u=>`
+    <div class="user-row">
+      <span class="ur-name">${u.username}</span>
+      <span class="ur-role ur-${u.role}">${u.role}</span>
+      ${u.role==='bookkeeper'?`<button class="btn-del-user" onclick="deleteUser('${u.id}','${u.username}')" title="Remove">✕</button>`:'<span style="width:20px;"></span>'}
+    </div>`).join('');
+}
+
+async function createBookkeeper(){
+  const username=document.getElementById('new-username').value.trim();
+  const password=document.getElementById('new-password').value;
+  if(!username||!password){toast('Enter username and password','err');return;}
+  if(password.length<4){toast('Password must be at least 4 characters','err');return;}
+  const hash=await sha256(password);
+  setSyncing('syncing');
+  const {error}=await sb.from('users').insert([{
+    username,password_hash:hash,role:'bookkeeper',
+    workspace_id:currentUser.workspace_id,
+    created_by:currentUser.id
+  }]);
+  if(error){
+    toast(error.message.includes('unique')?'Username already taken':('Error: '+error.message),'err');
+    setSyncing('err');return;
+  }
+  document.getElementById('new-username').value='';
+  document.getElementById('new-password').value='';
+  setSyncing('ok');toast('Bookkeeper created ✓','ok');
+  loadAdminPanel();
+}
+
+async function deleteUser(id,username){
+  if(!confirm(`Remove ${username} from your team?`))return;
+  setSyncing('syncing');
+  const {error}=await sb.from('users').delete().eq('id',id);
+  if(error){toast('Could not remove user','err');setSyncing('err');return;}
+  setSyncing('ok');toast(`${username} removed`,'inf');
+  loadAdminPanel();
+}
+
 // ── INIT ────────────────────────────────────────
 async function init(){
-  buildYearSelect();
-  updateNavUI();
-  await loadAll();
+  showLoading(true,'LOADING…');
+  // Also add workspace_id to entries table if needed — also add added_by column
+  const session=loadSession();
+  showLoading(false);
+  if(session){
+    // Re-verify session is still valid
+    const {data}=await sb.from('users').select('*').eq('id',session.id).eq('username',session.username).single();
+    if(data){currentUser=data;launchApp();return;}
+    else clearSession();
+  }
+  document.getElementById('login-screen').classList.remove('hidden');
 }
+
 init();
 </script>
 </body>
