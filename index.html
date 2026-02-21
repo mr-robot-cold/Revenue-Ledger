@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revenue Ledger</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg: #0a0c10; --surface: #111318; --surface2: #181b22; --border: #22262f;
+    --accent: #c8f060; --accent2: #60c8f0; --danger: #f06060; --warn: #f0b060;
+    --text: #e8eaf0; --muted: #5a6070; --green: #60f0a0; --purple: #b060f0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; min-height: 100vh; }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+    padding: 10px 18px; font-family: 'DM Mono', monospace; font-size: 12px;
+    opacity: 0; transform: translateY(10px); transition: all 0.25s;
+    pointer-events: none;
+  }
+  #toast.show { opacity: 1; transform: translateY(0); }
+  #toast.ok  { border-color: var(--green); color: var(--green); }
+  #toast.err { border-color: var(--danger); color: var(--danger); }
+  #toast.inf { border-color: var(--accent2); color: var(--accent2); }
+
+  /* ── LOADING OVERLAY ── */
+  #loading {
+    position: fixed; inset: 0; background: rgba(10,12,16,0.85);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 8888; gap: 14px;
+  }
+  #loading.hidden { display: none; }
+  .spinner {
+    width: 36px; height: 36px; border: 3px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #loading p { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); letter-spacing: 1px; }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 0 32px; display: flex; align-items: stretch;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .brand { display: flex; align-items: baseline; gap: 12px; padding: 14px 24px 14px 0; border-right: 1px solid var(--border); margin-right: 24px; }
+  .brand h1 { font-family: 'Bebas Neue', sans-serif; font-size: 30px; letter-spacing: 3px; color: var(--accent); line-height: 1; }
+  .brand span { color: var(--muted); font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 1px; }
+  .nav-tabs { display: flex; align-items: stretch; }
+  .nav-tab { background: none; border: none; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; padding: 0 20px; cursor: pointer; border-bottom: 3px solid transparent; transition: color 0.2s, border-color 0.2s; }
+  .nav-tab:hover { color: var(--text); }
+  .nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+  .hdr-month { color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; }
+  .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+  .sync-dot.syncing { background: var(--warn); animation: pulse 1s infinite; }
+  .sync-dot.err { background: var(--danger); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* ── LAYOUT ── */
+  .page { display: none; }
+  .page.active { display: block; }
+  .container { max-width: 1500px; margin: 0 auto; padding: 28px 32px; }
+  .section-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 3px; margin-bottom: 16px; }
+  .section-divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+  input[type="month"], input[type="date"] {
+    background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    padding: 7px 12px; font-family: 'DM Mono', monospace; font-size: 12px; border-radius: 4px; outline: none;
+  }
+  input[type="month"]:focus, input[type="date"]:focus { border-color: var(--accent); }
+
+  /* ── PAGE 1: STORES ── */
+  .month-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 24px; }
+  .month-bar label { color: var(--muted); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; font-family: 'DM Mono', monospace; }
+
+  .stores-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(500px, 1fr)); gap: 18px; margin-bottom: 24px; }
+  .store-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: border-color 0.2s; }
+  .store-card:hover { border-color: var(--accent); }
+  .store-header { background: var(--surface2); padding: 12px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
+  .store-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+  .store-name-input { background: transparent; border: none; color: var(--text); font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 2px; outline: none; flex: 1; min-width: 0; }
+  .store-name-input::placeholder { color: var(--muted); }
+  .btn-rm { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; padding: 2px 5px; border-radius: 3px; transition: color 0.2s, background 0.2s; }
+  .btn-rm:hover { color: var(--danger); background: rgba(240,96,96,0.1); }
+  .store-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-family: 'DM Mono', monospace; }
+  .field input[type="number"], .field input[type="text"] { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 7px 10px; font-family: 'DM Mono', monospace; font-size: 13px; border-radius: 4px; outline: none; width: 100%; transition: border-color 0.2s; }
+  .field input:focus { border-color: var(--accent2); }
+  .field input::placeholder { color: var(--muted); }
+
+  .fee-note { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--warn); background: rgba(240,176,96,0.07); border: 1px solid rgba(240,176,96,0.2); border-radius: 4px; padding: 5px 10px; }
+  .p2p-note { font-size: 11px; color: var(--accent2); font-family: 'DM Mono', monospace; background: rgba(96,200,240,0.07); border: 1px solid rgba(96,200,240,0.2); border-radius: 4px; padding: 5px 10px; }
+
+  .store-result { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 10px 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
+  .res-item { display: flex; flex-direction: column; gap: 2px; }
+  .res-label { font-size: 9px; color: var(--muted); font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 1px; }
+  .res-val { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; }
+  .res-val.green { color: var(--green); } .res-val.red { color: var(--danger); } .res-val.a2 { color: var(--accent2); }
+
+  .btn-add { background: transparent; border: 1px dashed var(--border); color: var(--muted); padding: 12px; border-radius: 8px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 13px; transition: all 0.2s; display: flex; align-items: center; gap: 8px; width: 100%; justify-content: center; }
+  .btn-add:hover { border-color: var(--accent); color: var(--accent); background: rgba(200,240,96,0.04); }
+
+  /* ── SUMMARY ── */
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .sc { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 5px; }
+  .sc .sl { font-size: 9px; color: var(--muted); font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 1.5px; }
+  .sc .sv { font-family: 'Bebas Neue', sans-serif; font-size: 26px; line-height: 1; }
+  .sc.hi { border-color: var(--accent); background: rgba(200,240,96,0.06); } .sc.hi .sv { color: var(--accent); }
+  .sc.bl { border-color: var(--accent2); background: rgba(96,200,240,0.06); } .sc.bl .sv { color: var(--accent2); }
+  .sc.rd { border-color: var(--danger); background: rgba(240,96,96,0.06); } .sc.rd .sv { color: var(--danger); }
+
+  /* ── EXTRACTION ── */
+  .ext-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+  .ext-box h3 { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 2px; margin-bottom: 12px; }
+  .slider-row { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+  .slider-row label { font-size: 11px; color: var(--muted); width: 90px; flex-shrink: 0; font-family: 'DM Mono', monospace; }
+  input[type="range"] { -webkit-appearance: none; flex: 1; height: 3px; background: var(--border); border-radius: 2px; outline: none; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); cursor: pointer; }
+  .spct { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--accent); width: 44px; text-align: right; }
+  .ext-results { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .ec { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 12px; }
+  .ec .el { font-size: 9px; color: var(--muted); font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+  .ec .ev { font-family: 'Bebas Neue', sans-serif; font-size: 24px; line-height: 1; color: var(--accent); }
+  .ec .es { font-size: 10px; color: var(--muted); font-family: 'DM Mono', monospace; margin-top: 3px; }
+  .ec.mid .ev { color: var(--accent2); } .ec.hi .ev { color: var(--warn); }
+
+  /* ── PAGE 2: DAILY LEDGER ── */
+  .ledger-top { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+  .ledger-top label { color: var(--muted); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; font-family: 'DM Mono', monospace; }
+
+  .entry-form { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px; margin-bottom: 18px; }
+  .entry-form h3 { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 2px; color: var(--accent2); margin-bottom: 14px; }
+  .efg { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 10px; align-items: end; }
+  .efg select { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 7px 10px; font-family: 'DM Mono', monospace; font-size: 12px; border-radius: 4px; outline: none; width: 100%; }
+  .efg select:focus { border-color: var(--accent2); }
+  .btn-eadd { background: var(--accent); color: #0a0c10; border: none; padding: 8px 18px; border-radius: 4px; font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; cursor: pointer; letter-spacing: 1px; transition: opacity 0.2s; align-self: end; white-space: nowrap; }
+  .btn-eadd:hover { opacity: 0.85; }
+  .btn-eadd:disabled { opacity: 0.4; cursor: not-allowed; }
+  .inline-note { font-family: 'DM Mono', monospace; font-size: 11px; border-radius: 4px; padding: 5px 10px; margin-top: 10px; display: none; }
+  .note-warn { color: var(--warn); background: rgba(240,176,96,0.07); border: 1px solid rgba(240,176,96,0.2); }
+  .note-cc { color: var(--purple); background: rgba(176,96,240,0.07); border: 1px solid rgba(176,96,240,0.25); }
+
+  .eom-box { background: var(--surface); border: 1px solid rgba(176,96,240,0.3); border-radius: 8px; padding: 16px 18px; margin-bottom: 18px; }
+  .eom-box h3 { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 2px; color: var(--purple); margin-bottom: 12px; }
+  .eom-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; }
+  .eom-note { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; margin-top: 8px; }
+
+  .ledger-totals { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 10px; margin-bottom: 20px; }
+  .tc { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 11px 13px; }
+  .tc .tl { font-size: 9px; color: var(--muted); font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+  .tc .tv { font-family: 'Bebas Neue', sans-serif; font-size: 20px; line-height: 1; }
+
+  .ltable-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; }
+  thead { background: var(--surface2); }
+  thead th { padding: 9px 13px; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.02); }
+  tbody td { padding: 9px 13px; font-family: 'DM Mono', monospace; font-size: 12px; white-space: nowrap; }
+  .td-date { color: var(--muted); } .td-store { color: var(--accent); }
+  .td-in { color: var(--green); } .td-out { color: var(--danger); }
+  .td-fee { color: var(--warn); } .td-bold { font-weight: 600; }
+  .td-note { color: var(--muted); font-size: 11px; max-width: 160px; overflow: hidden; text-overflow: ellipsis; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; }
+  .b-income      { background: rgba(96,240,160,0.12); color: var(--green); }
+  .b-supplier    { background: rgba(240,96,96,0.12);  color: var(--danger); }
+  .b-ads-payoneer{ background: rgba(96,200,240,0.12); color: var(--accent2); }
+  .b-ads-cc      { background: rgba(176,96,240,0.12); color: var(--purple); }
+  .b-services-cc { background: rgba(176,96,240,0.12); color: var(--purple); }
+  .b-salary      { background: rgba(240,176,96,0.12); color: var(--warn); }
+  .b-cc-eom      { background: rgba(176,96,240,0.18); color: var(--purple); }
+
+  .day-row td { background: var(--surface2); color: var(--muted); font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: 2px; padding: 7px 13px; border-top: 2px solid var(--border); }
+  .btn-del { background: none; border: none; color: var(--border); cursor: pointer; font-size: 13px; padding: 2px 4px; border-radius: 2px; transition: color 0.2s; }
+  .btn-del:hover { color: var(--danger); }
+  .empty-state { text-align: center; padding: 48px; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 12px; }
+
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  @media(max-width:700px){
+    header { padding: 0 12px; } .container { padding: 14px; }
+    .stores-grid { grid-template-columns: 1fr; } .field-row { grid-template-columns: 1fr; }
+    .ext-results { grid-template-columns: 1fr; } .efg { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading">
+  <div class="spinner"></div>
+  <p>CONNECTING TO DATABASE…</p>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="brand">
+    <h1>Revenue Ledger</h1>
+    <span>FINANCIAL TRACKER</span>
+  </div>
+  <nav class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('monthly',this)">Monthly Overview</button>
+    <button class="nav-tab" onclick="showPage('daily',this)">Daily Ledger</button>
+  </nav>
+  <div class="header-right">
+    <span class="hdr-month" id="hdr-month"></span>
+    <div class="sync-dot" id="sync-dot" title="Database connection"></div>
+  </div>
+</header>
+
+<!-- ══════════ PAGE 1: MONTHLY ══════════ -->
+<div id="page-monthly" class="page active">
+  <div class="container">
+    <div class="month-bar">
+      <label>Period</label>
+      <input type="month" id="month-picker">
+    </div>
+    <div class="stores-grid" id="stores-grid"></div>
+    <button class="btn-add" onclick="addStore()"><span style="font-size:18px;line-height:1">+</span>&nbsp;Add Store</button>
+    <hr class="section-divider">
+    <div class="section-title" style="color:var(--accent2)">Monthly Summary</div>
+    <div class="summary-grid">
+      <div class="sc"><span class="sl">Total Revenue</span><span class="sv" id="sum-rev" style="color:var(--text)">$0</span></div>
+      <div class="sc rd"><span class="sl">Payoneer Fees</span><span class="sv" id="sum-pf">$0</span></div>
+      <div class="sc rd"><span class="sl">Supplier Cost</span><span class="sv" id="sum-sup">$0</span></div>
+      <div class="sc rd"><span class="sl">CC / Ads / Services</span><span class="sv" id="sum-cc">$0</span></div>
+      <div class="sc rd"><span class="sl">Agency Funding P2P</span><span class="sv" id="sum-p2p">$0</span></div>
+      <div class="sc rd"><span class="sl">Salaries</span><span class="sv" id="sum-sal">$0</span></div>
+      <div class="sc rd"><span class="sl">Total Expenses</span><span class="sv" id="sum-exp">$0</span></div>
+      <div class="sc hi"><span class="sl">Net Profit</span><span class="sv" id="sum-profit">$0</span></div>
+      <div class="sc bl"><span class="sl">Profit Margin</span><span class="sv" id="sum-margin">0%</span></div>
+    </div>
+    <div class="ext-box">
+      <h3>Profit Extraction Estimator</h3>
+      <div class="slider-row">
+        <label>Min (10%)</label>
+        <input type="range" id="sl-min" min="10" max="20" value="10" step="1" oninput="updateExtraction()">
+        <span class="spct" id="pct-min">10%</span>
+      </div>
+      <div class="slider-row">
+        <label>Max (20%)</label>
+        <input type="range" id="sl-max" min="10" max="20" value="20" step="1" oninput="updateExtraction()">
+        <span class="spct" id="pct-max">20%</span>
+      </div>
+      <div class="ext-results">
+        <div class="ec"><div class="el">Low Extraction</div><div class="ev" id="ext-lo">$0</div><div class="es" id="ext-lo-s">10% of net</div></div>
+        <div class="ec mid"><div class="el">Mid Extraction</div><div class="ev" id="ext-mi">$0</div><div class="es" id="ext-mi-s">15% of net</div></div>
+        <div class="ec hi"><div class="el">High Extraction</div><div class="ev" id="ext-hi">$0</div><div class="es" id="ext-hi-s">20% of net</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ PAGE 2: DAILY LEDGER ══════════ -->
+<div id="page-daily" class="page">
+  <div class="container">
+    <div class="ledger-top">
+      <label>Month</label>
+      <input type="month" id="ledger-month">
+      <span style="color:var(--muted);font-family:'DM Mono',monospace;font-size:10px;">— entries shown for selected month</span>
+    </div>
+
+    <div class="entry-form">
+      <h3>+ New Daily Entry</h3>
+      <div class="efg">
+        <div class="field"><label>Date</label><input type="date" id="e-date"></div>
+        <div class="field"><label>Store</label>
+          <select id="e-store"><option value="">— General / All —</option></select>
+        </div>
+        <div class="field"><label>Transaction Type</label>
+          <select id="e-type" onchange="onTypeChange()">
+            <option value="income">📥 Incoming — Store Revenue</option>
+            <option value="supplier">📦 Supplier Payout</option>
+            <option value="ads-payoneer">🌐 Paid Ads — Payoneer P2P</option>
+            <option value="ads-cc">💳 Paid Ads — Credit Card</option>
+            <option value="services-cc">💳 Paid Services — Credit Card</option>
+            <option value="salary">👤 Employee Salary</option>
+          </select>
+        </div>
+        <div class="field"><label>Amount ($)</label><input type="number" id="e-amt" min="0" step="0.01" placeholder="0.00"></div>
+        <div class="field"><label>Note (optional)</label><input type="text" id="e-note" placeholder="supplier, platform, name…"></div>
+        <div><button class="btn-eadd" id="btn-add-entry" onclick="addEntry()">Add Entry</button></div>
+      </div>
+      <div id="note-income" class="inline-note note-warn">Payoneer fee auto-calculated: 1% if ≥ $100, flat $1 if &lt; $100.</div>
+      <div id="note-cc" class="inline-note note-cc">💳 CC charges tracked here daily. Or use the monthly lump sum below.</div>
+    </div>
+
+    <div class="eom-box">
+      <h3>💳 End-of-Month Credit Card Totals</h3>
+      <div class="eom-row">
+        <div class="field" style="min-width:180px;"><label>CC Paid Ads Total ($)</label><input type="number" id="eom-ads" min="0" step="0.01" placeholder="0.00"></div>
+        <div class="field" style="min-width:180px;"><label>CC Services Total ($)</label><input type="number" id="eom-svc" min="0" step="0.01" placeholder="0.00"></div>
+        <div style="align-self:end;"><button class="btn-eadd" style="background:var(--purple);" onclick="addEomEntry()">Add as Entry</button></div>
+      </div>
+      <div class="eom-note">Enter your total CC spend at end of month if you didn't log daily. Posts as a lump-sum row on the last day of the month.</div>
+    </div>
+
+    <div class="ledger-totals">
+      <div class="tc" style="border-color:var(--green)"><div class="tl">Total Incoming</div><div class="tv" id="lt-in" style="color:var(--green)">$0.00</div></div>
+      <div class="tc" style="border-color:var(--warn)"><div class="tl">Payoneer Fees</div><div class="tv" id="lt-fee" style="color:var(--warn)">$0.00</div></div>
+      <div class="tc" style="border-color:var(--danger)"><div class="tl">Supplier Payouts</div><div class="tv" id="lt-sup" style="color:var(--danger)">$0.00</div></div>
+      <div class="tc" style="border-color:var(--accent2)"><div class="tl">Ads Payoneer P2P</div><div class="tv" id="lt-adsp2p" style="color:var(--accent2)">$0.00</div></div>
+      <div class="tc" style="border-color:var(--purple)"><div class="tl">Ads + Services CC</div><div class="tv" id="lt-cc" style="color:var(--purple)">$0.00</div></div>
+      <div class="tc" style="border-color:var(--danger)"><div class="tl">Salaries</div><div class="tv" id="lt-sal" style="color:var(--danger)">$0.00</div></div>
+      <div class="tc" style="border-color:var(--danger)"><div class="tl">Total Expenses</div><div class="tv" id="lt-exp" style="color:var(--danger)">$0.00</div></div>
+      <div class="tc" style="border-color:var(--accent)"><div class="tl">Net (after fees)</div><div class="tv" id="lt-net" style="color:var(--accent)">$0.00</div></div>
+    </div>
+
+    <div class="ltable-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th><th>Store</th><th>Type</th>
+            <th>Gross Amount</th><th>Payoneer Fee</th><th>Net Amount</th>
+            <th>Note</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="ltbody">
+          <tr><td colspan="8" class="empty-state">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// SUPABASE INIT
+// ══════════════════════════════════════════
+const SUPABASE_URL = 'https://amamwkiqtsioyhvgjyum.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_TgA8T4XcmRSDz2c9fNkPIQ_2FaykKrb';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ══════════════════════════════════════════
+// TOAST & UI HELPERS
+// ══════════════════════════════════════════
+let toastTimer;
+function toast(msg, type='ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.className = '', 3000);
+}
+
+function setSyncing(state) {
+  const dot = document.getElementById('sync-dot');
+  dot.className = 'sync-dot' + (state === 'syncing' ? ' syncing' : state === 'err' ? ' err' : '');
+  dot.title = state === 'syncing' ? 'Saving…' : state === 'err' ? 'Connection error' : 'Connected';
+}
+
+function showLoading(v) {
+  document.getElementById('loading').classList.toggle('hidden', !v);
+}
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let stores = [];
+let entries = [];
+
+// ══════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════
+function showPage(pg, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + pg).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ══════════════════════════════════════════
+// MONTH PICKERS
+// ══════════════════════════════════════════
+const nowD = new Date();
+const defMonth = `${nowD.getFullYear()}-${String(nowD.getMonth()+1).padStart(2,'0')}`;
+const defDate  = nowD.toISOString().split('T')[0];
+
+['month-picker','ledger-month'].forEach(id => document.getElementById(id).value = defMonth);
+document.getElementById('e-date').value = defDate;
+document.getElementById('hdr-month').textContent = defMonth;
+
+document.getElementById('month-picker').addEventListener('change', e => {
+  const v = e.target.value;
+  document.getElementById('ledger-month').value = v;
+  document.getElementById('hdr-month').textContent = v;
+  loadStores();
+});
+document.getElementById('ledger-month').addEventListener('change', e => {
+  const v = e.target.value;
+  document.getElementById('month-picker').value = v;
+  document.getElementById('hdr-month').textContent = v;
+  loadEntries();
+});
+
+function currentMonth() { return document.getElementById('month-picker').value; }
+
+// ══════════════════════════════════════════
+// PAYONEER FEE
+// ══════════════════════════════════════════
+function pyFee(r) {
+  r = parseFloat(r) || 0;
+  if (r <= 0) return 0;
+  return r < 100 ? 1 : r * 0.01;
+}
+
+// ══════════════════════════════════════════
+// LOAD STORES FROM SUPABASE
+// ══════════════════════════════════════════
+async function loadStores() {
+  const month = currentMonth();
+  const { data, error } = await sb.from('stores').select('*').eq('month', month).order('created_at');
+  if (error) { toast('Error loading stores: ' + error.message, 'err'); setSyncing('err'); return; }
+  stores = data || [];
+  renderAllStoreCards();
+  updateSummary();
+  syncStoreDropdown();
+  setSyncing('ok');
+}
+
+// ══════════════════════════════════════════
+// PAGE 1: STORE CARDS
+// ══════════════════════════════════════════
+function renderAllStoreCards() {
+  const grid = document.getElementById('stores-grid');
+  grid.innerHTML = '';
+  stores.forEach(s => renderStoreCard(s));
+}
+
+function renderStoreCard(s) {
+  const grid = document.getElementById('stores-grid');
+  const d = document.createElement('div');
+  d.className = 'store-card'; d.id = 'sc-' + s.id;
+  d.innerHTML = `
+    <div class="store-header">
+      <div class="store-dot"></div>
+      <input class="store-name-input" placeholder="STORE NAME" value="${s.name || ''}"
+        onchange="updateStoreField('${s.id}','name',this.value)">
+      <button class="btn-rm" onclick="removeStore('${s.id}')">✕</button>
+    </div>
+    <div class="store-body">
+      <div class="field-row">
+        <div class="field"><label>Gross Revenue ($)</label>
+          <input type="number" min="0" step="0.01" placeholder="0.00" value="${s.revenue||''}"
+            onchange="updateStoreField('${s.id}','revenue',this.value)"></div>
+        <div class="field"><label>Supplier Cost ($)</label>
+          <input type="number" min="0" step="0.01" placeholder="0.00" value="${s.supplier||''}"
+            onchange="updateStoreField('${s.id}','supplier',this.value)"></div>
+      </div>
+      <div class="fee-note" id="fn-${s.id}">Payoneer fee: —</div>
+      <div class="field-row">
+        <div class="field"><label>CC / Paid Ads / Services ($)</label>
+          <input type="number" min="0" step="0.01" placeholder="0.00" value="${s.cc||''}"
+            onchange="updateStoreField('${s.id}','cc',this.value)"></div>
+        <div class="field"><label>Agency Funding P2P ($)</label>
+          <input type="number" min="0" step="0.01" placeholder="0.00" value="${s.p2p||''}"
+            onchange="updateStoreField('${s.id}','p2p',this.value)"></div>
+      </div>
+      <div class="p2p-note">Payoneer-to-Payoneer agency/marketing funding — no extra fee on P2P transfers.</div>
+      <div class="field-row">
+        <div class="field"><label>Employee Salaries ($)</label>
+          <input type="number" min="0" step="0.01" placeholder="0.00" value="${s.salary||''}"
+            onchange="updateStoreField('${s.id}','salary',this.value)"></div>
+      </div>
+      <div class="store-result">
+        <div class="res-item"><span class="res-label">After Payoneer Fee</span><span class="res-val a2" id="ra-${s.id}">—</span></div>
+        <div class="res-item"><span class="res-label">Total Expenses</span><span class="res-val red" id="re-${s.id}">—</span></div>
+        <div class="res-item"><span class="res-label">Net Profit</span><span class="res-val" id="rn-${s.id}">—</span></div>
+        <div class="res-item"><span class="res-label">Margin</span><span class="res-val" id="rm-${s.id}">—</span></div>
+      </div>
+    </div>`;
+  grid.appendChild(d);
+  recalcStore(s.id);
+}
+
+async function addStore() {
+  const month = currentMonth();
+  setSyncing('syncing');
+  const { data, error } = await sb.from('stores').insert([{ name: 'STORE ' + (stores.length + 1), month, revenue: 0, supplier: 0, cc: 0, p2p: 0, salary: 0 }]).select().single();
+  if (error) { toast('Could not add store: ' + error.message, 'err'); setSyncing('err'); return; }
+  stores.push(data);
+  renderStoreCard(data);
+  syncStoreDropdown();
+  updateSummary();
+  setSyncing('ok');
+  toast('Store added', 'ok');
+}
+
+async function removeStore(id) {
+  if (!confirm('Remove this store?')) return;
+  setSyncing('syncing');
+  const { error } = await sb.from('stores').delete().eq('id', id);
+  if (error) { toast('Could not remove store: ' + error.message, 'err'); setSyncing('err'); return; }
+  stores = stores.filter(s => s.id !== id);
+  document.getElementById('sc-' + id)?.remove();
+  syncStoreDropdown();
+  updateSummary();
+  setSyncing('ok');
+  toast('Store removed', 'ok');
+}
+
+// Debounce map to avoid too many DB calls while typing
+const debounceTimers = {};
+async function updateStoreField(id, field, value) {
+  const s = stores.find(x => x.id === id); if (!s) return;
+  s[field] = value;
+  recalcStore(id);
+  updateSummary();
+  clearTimeout(debounceTimers[id + field]);
+  debounceTimers[id + field] = setTimeout(async () => {
+    setSyncing('syncing');
+    const update = {}; update[field] = field === 'name' ? value : (parseFloat(value) || 0);
+    const { error } = await sb.from('stores').update(update).eq('id', id);
+    if (error) { toast('Save failed: ' + error.message, 'err'); setSyncing('err'); }
+    else { setSyncing('ok'); }
+  }, 600);
+}
+
+function recalcStore(id) {
+  const s = stores.find(x => x.id === id); if (!s) return;
+  const rev = parseFloat(s.revenue)||0, fee = pyFee(rev), afterFee = rev - fee;
+  const sup = parseFloat(s.supplier)||0, cc = parseFloat(s.cc)||0;
+  const p2p = parseFloat(s.p2p)||0, sal = parseFloat(s.salary)||0;
+  const exp = fee + sup + cc + p2p + sal, net = rev - exp, mg = rev > 0 ? (net/rev*100) : 0;
+  const fn = document.getElementById('fn-' + id);
+  if (fn) fn.textContent = rev <= 0 ? 'Payoneer fee: —' : rev < 100 ? `Payoneer fee: $1.00 (flat — under $100)` : `Payoneer fee: $${fee.toFixed(2)} (1% of $${rev.toFixed(2)})`;
+  const st = (eid, v, c) => { const el = document.getElementById(eid); if(el){el.textContent=v; if(c)el.className='res-val '+c;} };
+  st('ra-'+id, rev>0?'$'+afterFee.toFixed(2):'—','a2');
+  st('re-'+id, exp>0?'$'+exp.toFixed(2):'—','red');
+  st('rn-'+id, rev>0?(net>=0?'$'+net.toFixed(2):'-$'+Math.abs(net).toFixed(2)):'—', net>=0?'green':'red');
+  st('rm-'+id, rev>0?mg.toFixed(1)+'%':'—', mg>=0?'green':'red');
+}
+
+function updateSummary() {
+  let tR=0,tF=0,tS=0,tC=0,tP=0,tSa=0;
+  stores.forEach(s => {
+    const r=parseFloat(s.revenue)||0; tR+=r; tF+=pyFee(r);
+    tS+=parseFloat(s.supplier)||0; tC+=parseFloat(s.cc)||0;
+    tP+=parseFloat(s.p2p)||0; tSa+=parseFloat(s.salary)||0;
+  });
+  const exp=tF+tS+tC+tP+tSa, net=tR-exp, mg=tR>0?(net/tR*100):0;
+  const f=v=>'$'+v.toFixed(2);
+  document.getElementById('sum-rev').textContent=f(tR);
+  document.getElementById('sum-pf').textContent=f(tF);
+  document.getElementById('sum-sup').textContent=f(tS);
+  document.getElementById('sum-cc').textContent=f(tC);
+  document.getElementById('sum-p2p').textContent=f(tP);
+  document.getElementById('sum-sal').textContent=f(tSa);
+  document.getElementById('sum-exp').textContent=f(exp);
+  const pe=document.getElementById('sum-profit');
+  pe.textContent=net>=0?f(net):'-$'+Math.abs(net).toFixed(2);
+  pe.style.color=net>=0?'var(--accent)':'var(--danger)';
+  document.getElementById('sum-margin').textContent=mg.toFixed(1)+'%';
+  updateExtraction(net);
+}
+
+function updateExtraction(net) {
+  if(net===undefined){let tR=0,tE=0;stores.forEach(s=>{const r=parseFloat(s.revenue)||0;tR+=r;tE+=pyFee(r)+(parseFloat(s.supplier)||0)+(parseFloat(s.cc)||0)+(parseFloat(s.p2p)||0)+(parseFloat(s.salary)||0);});net=tR-tE;}
+  const mn=parseInt(document.getElementById('sl-min').value);
+  const mx=parseInt(document.getElementById('sl-max').value);
+  const mid=Math.round((mn+mx)/2);
+  document.getElementById('pct-min').textContent=mn+'%';
+  document.getElementById('pct-max').textContent=mx+'%';
+  const fmt=v=>v>=0?'$'+v.toFixed(2):'-$'+Math.abs(v).toFixed(2);
+  document.getElementById('ext-lo').textContent=fmt(net*mn/100); document.getElementById('ext-lo-s').textContent=mn+'% of net profit';
+  document.getElementById('ext-mi').textContent=fmt(net*mid/100); document.getElementById('ext-mi-s').textContent=mid+'% of net profit';
+  document.getElementById('ext-hi').textContent=fmt(net*mx/100); document.getElementById('ext-hi-s').textContent=mx+'% of net profit';
+}
+
+// ══════════════════════════════════════════
+// PAGE 2: DAILY LEDGER
+// ══════════════════════════════════════════
+function syncStoreDropdown() {
+  const sel = document.getElementById('e-store'), cur = sel.value;
+  sel.innerHTML = '<option value="">— General / All —</option>';
+  stores.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.id; o.textContent = s.name || 'Store';
+    sel.appendChild(o);
+  });
+  sel.value = cur;
+}
+
+function onTypeChange() {
+  const t = document.getElementById('e-type').value;
+  document.getElementById('note-income').style.display = t==='income'?'block':'none';
+  document.getElementById('note-cc').style.display = (t==='ads-cc'||t==='services-cc')?'block':'none';
+}
+
+const typeLabels = {income:'Incoming Revenue',supplier:'Supplier Payout','ads-payoneer':'Ads – Payoneer P2P','ads-cc':'Paid Ads – CC','services-cc':'Paid Services – CC',salary:'Employee Salary','cc-eom':'CC End-of-Month'};
+const badgeClass = {income:'b-income',supplier:'b-supplier','ads-payoneer':'b-ads-payoneer','ads-cc':'b-ads-cc','services-cc':'b-services-cc',salary:'b-salary','cc-eom':'b-cc-eom'};
+
+async function loadEntries() {
+  const month = document.getElementById('ledger-month').value;
+  const { data, error } = await sb.from('entries').select('*').eq('month', month).order('date').order('created_at');
+  if (error) { toast('Error loading entries: ' + error.message, 'err'); return; }
+  entries = data || [];
+  renderLedger();
+}
+
+async function addEntry() {
+  const date   = document.getElementById('e-date').value;
+  const storeId= document.getElementById('e-store').value;
+  const type   = document.getElementById('e-type').value;
+  const amt    = parseFloat(document.getElementById('e-amt').value);
+  const note   = document.getElementById('e-note').value.trim();
+  if (!date) { toast('Please pick a date.', 'err'); return; }
+  if (!amt || amt <= 0) { toast('Enter a valid amount.', 'err'); return; }
+  const sName = storeId ? (stores.find(s=>s.id===storeId)?.name||'Store') : '—';
+  const fee   = type === 'income' ? pyFee(amt) : 0;
+  const month = document.getElementById('ledger-month').value;
+  const btn   = document.getElementById('btn-add-entry');
+  btn.disabled = true;
+  setSyncing('syncing');
+  const { data, error } = await sb.from('entries').insert([{
+    date, store_id: storeId||null, store_name: sName, type, amount: amt, fee, note: note||null, month
+  }]).select().single();
+  btn.disabled = false;
+  if (error) { toast('Could not save entry: ' + error.message, 'err'); setSyncing('err'); return; }
+  entries.push(data);
+  document.getElementById('e-amt').value = '';
+  document.getElementById('e-note').value = '';
+  renderLedger();
+  setSyncing('ok');
+  toast('Entry saved ✓', 'ok');
+}
+
+async function addEomEntry() {
+  const ads = parseFloat(document.getElementById('eom-ads').value)||0;
+  const svc = parseFloat(document.getElementById('eom-svc').value)||0;
+  if (ads===0 && svc===0) { toast('Enter at least one CC amount.', 'err'); return; }
+  const month = document.getElementById('ledger-month').value;
+  if (!month) { toast('Select a month first.', 'err'); return; }
+  const [yr,mo] = month.split('-').map(Number);
+  const last = new Date(yr, mo, 0).getDate();
+  const date = `${month}-${String(last).padStart(2,'0')}`;
+  const rows = [];
+  if (ads>0) rows.push({date,store_id:null,store_name:'—',type:'cc-eom',amount:ads,fee:0,note:'CC Paid Ads (EOM lump sum)',month});
+  if (svc>0) rows.push({date,store_id:null,store_name:'—',type:'cc-eom',amount:svc,fee:0,note:'CC Services (EOM lump sum)',month});
+  setSyncing('syncing');
+  const { data, error } = await sb.from('entries').insert(rows).select();
+  if (error) { toast('Could not save: ' + error.message, 'err'); setSyncing('err'); return; }
+  entries.push(...data);
+  document.getElementById('eom-ads').value = '';
+  document.getElementById('eom-svc').value = '';
+  renderLedger();
+  setSyncing('ok');
+  toast('CC entries saved ✓', 'ok');
+}
+
+async function delEntry(id) {
+  setSyncing('syncing');
+  const { error } = await sb.from('entries').delete().eq('id', id);
+  if (error) { toast('Could not delete: ' + error.message, 'err'); setSyncing('err'); return; }
+  entries = entries.filter(e => e.id !== id);
+  renderLedger();
+  setSyncing('ok');
+  toast('Entry deleted', 'inf');
+}
+
+function renderLedger() {
+  const rows = [...entries].sort((a,b)=>a.date.localeCompare(b.date));
+  let tIn=0,tFee=0,tSup=0,tAdsP2P=0,tCC=0,tSal=0;
+  rows.forEach(e=>{
+    if(e.type==='income'){tIn+=Number(e.amount);tFee+=Number(e.fee);}
+    else if(e.type==='supplier')tSup+=Number(e.amount);
+    else if(e.type==='ads-payoneer')tAdsP2P+=Number(e.amount);
+    else if(e.type==='ads-cc'||e.type==='services-cc'||e.type==='cc-eom')tCC+=Number(e.amount);
+    else if(e.type==='salary')tSal+=Number(e.amount);
+  });
+  const tExp=tFee+tSup+tAdsP2P+tCC+tSal, net=tIn-tExp;
+  const f=v=>'$'+Number(v).toFixed(2);
+  document.getElementById('lt-in').textContent=f(tIn);
+  document.getElementById('lt-fee').textContent=f(tFee);
+  document.getElementById('lt-sup').textContent=f(tSup);
+  document.getElementById('lt-adsp2p').textContent=f(tAdsP2P);
+  document.getElementById('lt-cc').textContent=f(tCC);
+  document.getElementById('lt-sal').textContent=f(tSal);
+  document.getElementById('lt-exp').textContent=f(tExp);
+  const ne=document.getElementById('lt-net');
+  ne.textContent=net>=0?f(net):'-$'+Math.abs(net).toFixed(2);
+  ne.style.color=net>=0?'var(--accent)':'var(--danger)';
+
+  const tbody=document.getElementById('ltbody');
+  if(rows.length===0){tbody.innerHTML='<tr><td colspan="8" class="empty-state">No entries for this month. Log your first transaction above.</td></tr>';return;}
+  let html='',lastDate=null;
+  rows.forEach(e=>{
+    if(e.date!==lastDate){
+      const d=new Date(e.date+'T00:00:00');
+      html+=`<tr class="day-row"><td colspan="8">${d.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</td></tr>`;
+      lastDate=e.date;
+    }
+    const isExp=e.type!=='income';
+    const netAmt=e.type==='income'?(Number(e.amount)-Number(e.fee)):Number(e.amount);
+    html+=`<tr>
+      <td class="td-date">${e.date}</td>
+      <td class="td-store">${e.store_name||'—'}</td>
+      <td><span class="badge ${badgeClass[e.type]||''}">${typeLabels[e.type]||e.type}</span></td>
+      <td class="${isExp?'td-out':'td-in'}">${isExp?'−':'＋'}$${Number(e.amount).toFixed(2)}</td>
+      <td class="td-fee">${Number(e.fee)>0?'−$'+Number(e.fee).toFixed(2):'—'}</td>
+      <td class="${isExp?'td-out':'td-in'} td-bold">${isExp?'−':''}$${netAmt.toFixed(2)}</td>
+      <td class="td-note" title="${e.note||''}">${e.note||'—'}</td>
+      <td><button class="btn-del" onclick="delEntry('${e.id}')" title="Delete">✕</button></td>
+    </tr>`;
+  });
+  tbody.innerHTML=html;
+}
+
+// ══════════════════════════════════════════
+// INIT — load data on startup
+// ══════════════════════════════════════════
+async function init() {
+  showLoading(true);
+  await Promise.all([loadStores(), loadEntries()]);
+  showLoading(false);
+}
+
+init();
+</script>
+</body>
+</html>
