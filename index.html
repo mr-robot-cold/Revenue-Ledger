@@ -11,10 +11,12 @@
     --bg:#0a0c10;--surface:#111318;--surface2:#181b22;--border:#22262f;
     --accent:#c8f060;--accent2:#60c8f0;--danger:#f06060;--warn:#f0b060;
     --text:#e8eaf0;--muted:#5a6070;--green:#60f0a0;--purple:#b060f0;
+    --lock:#f0b060;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;min-height:100vh;}
 
+  /* TOAST */
   #toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px 18px;font-family:'DM Mono',monospace;font-size:12px;opacity:0;transform:translateY(10px);transition:all .25s;pointer-events:none;}
   #toast.show{opacity:1;transform:translateY(0);}
   #toast.ok{border-color:var(--green);color:var(--green);}
@@ -22,6 +24,7 @@
   #toast.inf{border-color:var(--accent2);color:var(--accent2);}
   #toast.warn{border-color:var(--warn);color:var(--warn);}
 
+  /* LOADING */
   #loading{position:fixed;inset:0;background:rgba(10,12,16,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9888;gap:14px;}
   #loading.hidden{display:none;}
   .spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
@@ -29,7 +32,7 @@
   #loading p{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:1px;}
 
   /* LOGIN */
-  #login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9000;}
+  #login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9000;flex-direction:column;}
   #login-screen.hidden{display:none;}
   .login-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:40px;width:100%;max-width:380px;}
   .login-logo{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:4px;color:var(--accent);text-align:center;margin-bottom:4px;}
@@ -75,14 +78,12 @@
   .section-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;margin-bottom:16px;}
   .section-divider{border:none;border-top:1px solid var(--border);margin:28px 0;}
 
-  /* LOCK BANNER */
+  /* ── LOCK BANNER ── */
   .lock-banner{display:flex;align-items:center;gap:14px;padding:14px 18px;background:rgba(240,176,96,.07);border:1px solid rgba(240,176,96,.35);border-radius:8px;margin-bottom:20px;}
-  .lock-banner.warn-past{background:rgba(240,96,96,.04);border-color:rgba(240,96,96,.2);}
-  .lb-icon{font-size:22px;flex-shrink:0;}
-  .lb-text{flex:1;}
-  .lb-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--warn);}
-  .lb-title.red{color:var(--danger);}
-  .lb-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:2px;}
+  .lock-banner .lb-icon{font-size:22px;flex-shrink:0;}
+  .lock-banner .lb-text{flex:1;}
+  .lock-banner .lb-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--warn);}
+  .lock-banner .lb-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:2px;}
   .btn-unlock{background:none;border:1px solid var(--warn);color:var(--warn);font-family:'DM Mono',monospace;font-size:11px;padding:6px 14px;border-radius:4px;cursor:pointer;letter-spacing:1px;transition:all .2s;white-space:nowrap;}
   .btn-unlock:hover{background:rgba(240,176,96,.12);}
   .btn-lock{background:none;border:1px solid var(--muted);color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;padding:6px 14px;border-radius:4px;cursor:pointer;letter-spacing:1px;transition:all .2s;white-space:nowrap;}
@@ -98,28 +99,39 @@
   .pb-navbtn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:4px;cursor:pointer;font-family:'DM Mono',monospace;font-size:12px;transition:all .2s;}
   .pb-navbtn:hover{border-color:var(--accent);color:var(--accent);}
 
-  /* LOCK DISABLED */
+  /* DISABLED STATE (locked month) */
+  .month-locked input,.month-locked select,.month-locked textarea{pointer-events:none;opacity:.5;cursor:not-allowed;}
+  .month-locked .btn-add,.month-locked .btn-eadd,.month-locked .btn-rm,.month-locked .btn-del{display:none;}
   .month-locked .entry-form,.month-locked .eom-box{opacity:.5;pointer-events:none;}
-  .month-locked .btn-del{display:none;}
 
-  /* ── MONTHLY OVERVIEW — STORE BREAKDOWN CARDS ── */
-  .store-breakdown-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:18px;margin-bottom:28px;}
-  .sbc{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;transition:border-color .2s;}
-  .sbc:hover{border-color:var(--accent2);}
-  .sbc-header{background:var(--surface2);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);}
-  .sbc-dot{width:9px;height:9px;border-radius:50%;background:var(--accent2);flex-shrink:0;}
-  .sbc-name{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;flex:1;}
-  .sbc-body{padding:16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
-  .sbc-item{display:flex;flex-direction:column;gap:3px;}
-  .sbc-label{font-size:8px;color:var(--muted);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:1.5px;}
-  .sbc-val{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;}
-  .sbc-val.g{color:var(--green);}.sbc-val.r{color:var(--danger);}.sbc-val.a{color:var(--accent);}.sbc-val.a2{color:var(--accent2);}.sbc-val.w{color:var(--warn);}
-  .sbc-footer{padding:12px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg);}
-  .sbc-net-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
-  .sbc-net-val{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;}
-  .sbc-margin{font-family:'DM Mono',monospace;font-size:11px;padding:3px 8px;border-radius:4px;background:rgba(200,240,96,.08);color:var(--accent);}
+  /* STORES */
+  .stores-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(500px,1fr));gap:18px;margin-bottom:24px;}
+  .store-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;transition:border-color .2s;}
+  .store-card:hover{border-color:var(--accent);}
+  .store-header{background:var(--surface2);padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);}
+  .store-dot{width:9px;height:9px;border-radius:50%;background:var(--accent);flex-shrink:0;}
+  .store-name-input{background:transparent;border:none;color:var(--text);font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;outline:none;flex:1;min-width:0;}
+  .store-name-input::placeholder{color:var(--muted);}
+  .btn-rm{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:2px 5px;border-radius:3px;transition:color .2s,background .2s;}
+  .btn-rm:hover{color:var(--danger);background:rgba(240,96,96,.1);}
+  .store-body{padding:16px;display:flex;flex-direction:column;gap:12px;}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .field{display:flex;flex-direction:column;gap:4px;}
+  .field label{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-family:'DM Mono',monospace;}
+  .field input[type="number"],.field input[type="text"],.field input[type="password"]{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;font-family:'DM Mono',monospace;font-size:13px;border-radius:4px;outline:none;width:100%;transition:border-color .2s;}
+  .field input:focus{border-color:var(--accent2);}
+  .field input::placeholder{color:var(--muted);}
+  .fee-note{font-family:'DM Mono',monospace;font-size:11px;color:var(--warn);background:rgba(240,176,96,.07);border:1px solid rgba(240,176,96,.2);border-radius:4px;padding:5px 10px;}
+  .p2p-note{font-size:11px;color:var(--accent2);font-family:'DM Mono',monospace;background:rgba(96,200,240,.07);border:1px solid rgba(96,200,240,.2);border-radius:4px;padding:5px 10px;}
+  .store-result{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:10px 12px;display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;}
+  .res-item{display:flex;flex-direction:column;gap:2px;}
+  .res-label{font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:1px;}
+  .res-val{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;}
+  .res-val.green{color:var(--green);}.res-val.red{color:var(--danger);}.res-val.a2{color:var(--accent2);}
+  .btn-add{background:transparent;border:1px dashed var(--border);color:var(--muted);padding:12px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;transition:all .2s;display:flex;align-items:center;gap:8px;width:100%;justify-content:center;}
+  .btn-add:hover{border-color:var(--accent);color:var(--accent);background:rgba(200,240,96,.04);}
 
-  /* SUMMARY CARDS */
+  /* SUMMARY */
   .summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:12px;margin-bottom:20px;}
   .sc{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:5px;}
   .sc .sl{font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:1.5px;}
@@ -143,16 +155,12 @@
   .ec .es{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:3px;}
   .ec.mid .ev{color:var(--accent2);}.ec.hi .ev{color:var(--warn);}
 
-  /* NO DATA */
-  .no-data-box{background:var(--surface);border:1px dashed var(--border);border-radius:8px;padding:40px;text-align:center;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;margin-bottom:28px;}
-  .no-data-box span{display:block;font-size:28px;margin-bottom:10px;}
-
   /* LEDGER */
   .entry-form{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px;margin-bottom:18px;}
   .entry-form h3{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--accent2);margin-bottom:14px;}
   .efg{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px;align-items:end;}
-  .efg select,.efg input[type="date"],.efg input[type="number"],.efg input[type="text"]{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;font-family:'DM Mono',monospace;font-size:12px;border-radius:4px;outline:none;width:100%;}
-  .efg select:focus,.efg input:focus{border-color:var(--accent2);}
+  .efg select,.efg input[type="date"]{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;font-family:'DM Mono',monospace;font-size:12px;border-radius:4px;outline:none;width:100%;}
+  .efg select:focus,.efg input[type="date"]:focus{border-color:var(--accent2);}
   .btn-eadd{background:var(--accent);color:#0a0c10;border:none;padding:8px 18px;border-radius:4px;font-family:'DM Mono',monospace;font-size:12px;font-weight:500;cursor:pointer;letter-spacing:1px;transition:opacity .2s;align-self:end;white-space:nowrap;}
   .btn-eadd:hover{opacity:.85;}.btn-eadd:disabled{opacity:.4;cursor:not-allowed;}
   .inline-note{font-family:'DM Mono',monospace;font-size:11px;border-radius:4px;padding:5px 10px;margin-top:10px;display:none;}
@@ -190,38 +198,23 @@
   .btn-del:hover{color:var(--danger);}
   .empty-state{text-align:center;padding:48px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;}
 
-  /* STORE NAME ENTRY */
-  .store-name-mgmt{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
-  .store-name-mgmt .snm-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;white-space:nowrap;}
-  .store-tags{display:flex;gap:8px;flex-wrap:wrap;flex:1;}
-  .store-tag{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-family:'DM Mono',monospace;font-size:12px;display:flex;align-items:center;gap:6px;}
-  .store-tag .st-rm{background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;transition:color .2s;padding:0;}
-  .store-tag .st-rm:hover{color:var(--danger);}
-  .store-add-input{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:6px 10px;font-family:'DM Mono',monospace;font-size:12px;border-radius:4px;outline:none;width:140px;}
-  .store-add-input:focus{border-color:var(--accent);}
-  .btn-add-store-name{background:var(--accent);color:#0a0c10;border:none;padding:6px 14px;border-radius:4px;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;cursor:pointer;transition:opacity .2s;}
-  .btn-add-store-name:hover{opacity:.85;}
-
   /* ADMIN */
   .admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
   .admin-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;}
   .admin-card h3{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--accent2);margin-bottom:16px;}
   .user-list{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
   .user-row{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 14px;display:flex;align-items:center;gap:10px;}
-  .ur-name{font-family:'DM Mono',monospace;font-size:13px;flex:1;}
+  .user-row .ur-name{font-family:'DM Mono',monospace;font-size:13px;flex:1;}
   .ur-role{font-size:9px;padding:2px 7px;border-radius:10px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;}
   .ur-owner{background:rgba(200,240,96,.12);color:var(--accent);}
   .ur-bookkeeper{background:rgba(96,200,240,.12);color:var(--accent2);}
   .btn-del-user{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;transition:color .2s;}
   .btn-del-user:hover{color:var(--danger);}
   .add-user-form{display:flex;flex-direction:column;gap:10px;}
-  .field{display:flex;flex-direction:column;gap:4px;}
-  .field label{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-family:'DM Mono',monospace;}
-  .field input[type="text"],.field input[type="password"]{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;font-family:'DM Mono',monospace;font-size:13px;border-radius:4px;outline:none;width:100%;transition:border-color .2s;}
-  .field input:focus{border-color:var(--accent2);}
-  .field input::placeholder{color:var(--muted);}
   .btn-create-user{background:var(--accent2);color:#0a0c10;border:none;padding:9px 18px;border-radius:4px;font-family:'DM Mono',monospace;font-size:12px;font-weight:500;cursor:pointer;letter-spacing:1px;transition:opacity .2s;width:100%;}
   .btn-create-user:hover{opacity:.85;}
+
+  /* LOCKED MONTHS LIST in admin */
   .locked-months-list{display:flex;flex-direction:column;gap:8px;}
   .lm-row{background:var(--bg);border:1px solid rgba(240,176,96,.25);border-radius:6px;padding:10px 14px;display:flex;align-items:center;gap:10px;}
   .lm-month{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--warn);flex:1;}
@@ -230,17 +223,17 @@
   ::-webkit-scrollbar{width:5px;height:5px;}
   ::-webkit-scrollbar-track{background:var(--bg);}
   ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
   @media(max-width:700px){
     header{padding:0 12px;flex-wrap:wrap;}.container{padding:14px;}
-    .store-breakdown-grid{grid-template-columns:1fr;}
-    .sbc-body{grid-template-columns:1fr 1fr;}
-    .ext-results{grid-template-columns:1fr;}
-    .efg{grid-template-columns:1fr 1fr;}
+    .stores-grid{grid-template-columns:1fr;}.field-row{grid-template-columns:1fr;}
+    .ext-results{grid-template-columns:1fr;}.efg{grid-template-columns:1fr 1fr;}
     .admin-grid{grid-template-columns:1fr;}
   }
 </style>
 </head>
 <body>
+
 <div id="loading"><div class="spinner"></div><p id="loading-msg">LOADING…</p></div>
 <div id="toast"></div>
 
@@ -259,7 +252,10 @@
 <!-- APP -->
 <div id="app">
   <header>
-    <div class="brand"><h1>Revenue Ledger</h1><span id="workspace-label">WORKSPACE</span></div>
+    <div class="brand">
+      <h1>Revenue Ledger</h1>
+      <span id="workspace-label">WORKSPACE</span>
+    </div>
     <nav class="nav-tabs" id="nav-tabs"></nav>
     <div class="month-nav" id="month-nav">
       <button class="mnav-btn" onclick="stepMonth(-1)">&#8592;</button>
@@ -277,9 +273,10 @@
     </div>
   </header>
 
-  <!-- PAGE: MONTHLY OVERVIEW -->
+  <!-- PAGE: MONTHLY -->
   <div id="page-monthly" class="page">
     <div class="container">
+      <!-- lock banner injected here -->
       <div id="monthly-lock-banner"></div>
       <div class="period-banner" id="pb-monthly">
         <span class="pb-label">Viewing Period</span>
@@ -290,37 +287,31 @@
           <button class="pb-navbtn" onclick="stepMonth(1)">Next →</button>
         </div>
       </div>
-
-      <!-- per-store breakdown (auto from ledger) -->
-      <div class="section-title" style="color:var(--accent2)">Store Breakdown</div>
-      <div class="store-breakdown-grid" id="store-breakdown-grid">
-        <div class="no-data-box"><span>📊</span>No entries yet for this month.<br>Add entries in the Daily Ledger and they'll appear here automatically.</div>
-      </div>
-
-      <hr class="section-divider">
-
-      <!-- combined totals -->
-      <div class="section-title" style="color:var(--accent2)">Monthly Summary — All Stores</div>
-      <div class="summary-grid">
-        <div class="sc"><span class="sl">Total Gross Revenue</span><span class="sv" id="sum-rev" style="color:var(--text)">$0.00</span></div>
-        <div class="sc rd"><span class="sl">Payoneer Fees</span><span class="sv" id="sum-pf">$0.00</span></div>
-        <div class="sc rd"><span class="sl">Supplier Cost</span><span class="sv" id="sum-sup">$0.00</span></div>
-        <div class="sc rd"><span class="sl">Ads / Services CC</span><span class="sv" id="sum-cc">$0.00</span></div>
-        <div class="sc rd"><span class="sl">Ads Payoneer P2P</span><span class="sv" id="sum-p2p">$0.00</span></div>
-        <div class="sc rd"><span class="sl">Salaries</span><span class="sv" id="sum-sal">$0.00</span></div>
-        <div class="sc rd"><span class="sl">Total Expenses</span><span class="sv" id="sum-exp">$0.00</span></div>
-        <div class="sc hi"><span class="sl">Net Profit</span><span class="sv" id="sum-profit">$0.00</span></div>
-        <div class="sc bl"><span class="sl">Profit Margin</span><span class="sv" id="sum-margin">0.0%</span></div>
-      </div>
-
-      <div class="ext-box">
-        <h3>Profit Extraction Estimator</h3>
-        <div class="slider-row"><label>Min (10%)</label><input type="range" id="sl-min" min="10" max="20" value="10" step="1" oninput="updateExtraction()"><span class="spct" id="pct-min">10%</span></div>
-        <div class="slider-row"><label>Max (20%)</label><input type="range" id="sl-max" min="10" max="20" value="20" step="1" oninput="updateExtraction()"><span class="spct" id="pct-max">20%</span></div>
-        <div class="ext-results">
-          <div class="ec"><div class="el">Low</div><div class="ev" id="ext-lo">$0</div><div class="es" id="ext-lo-s">10%</div></div>
-          <div class="ec mid"><div class="el">Mid</div><div class="ev" id="ext-mi">$0</div><div class="es" id="ext-mi-s">15%</div></div>
-          <div class="ec hi"><div class="el">High</div><div class="ev" id="ext-hi">$0</div><div class="es" id="ext-hi-s">20%</div></div>
+      <div id="monthly-content">
+        <div class="stores-grid" id="stores-grid"></div>
+        <button class="btn-add" id="btn-add-store" onclick="addStore()"><span style="font-size:18px;line-height:1">+</span>&nbsp;Add Store</button>
+        <hr class="section-divider">
+        <div class="section-title" style="color:var(--accent2)">Monthly Summary</div>
+        <div class="summary-grid">
+          <div class="sc"><span class="sl">Total Revenue</span><span class="sv" id="sum-rev" style="color:var(--text)">$0</span></div>
+          <div class="sc rd"><span class="sl">Payoneer Fees</span><span class="sv" id="sum-pf">$0</span></div>
+          <div class="sc rd"><span class="sl">Supplier Cost</span><span class="sv" id="sum-sup">$0</span></div>
+          <div class="sc rd"><span class="sl">CC / Ads / Services</span><span class="sv" id="sum-cc">$0</span></div>
+          <div class="sc rd"><span class="sl">Agency Funding P2P</span><span class="sv" id="sum-p2p">$0</span></div>
+          <div class="sc rd"><span class="sl">Salaries</span><span class="sv" id="sum-sal">$0</span></div>
+          <div class="sc rd"><span class="sl">Total Expenses</span><span class="sv" id="sum-exp">$0</span></div>
+          <div class="sc hi"><span class="sl">Net Profit</span><span class="sv" id="sum-profit">$0</span></div>
+          <div class="sc bl"><span class="sl">Profit Margin</span><span class="sv" id="sum-margin">0%</span></div>
+        </div>
+        <div class="ext-box">
+          <h3>Profit Extraction Estimator</h3>
+          <div class="slider-row"><label>Min (10%)</label><input type="range" id="sl-min" min="10" max="20" value="10" step="1" oninput="updateExtraction()"><span class="spct" id="pct-min">10%</span></div>
+          <div class="slider-row"><label>Max (20%)</label><input type="range" id="sl-max" min="10" max="20" value="20" step="1" oninput="updateExtraction()"><span class="spct" id="pct-max">20%</span></div>
+          <div class="ext-results">
+            <div class="ec"><div class="el">Low</div><div class="ev" id="ext-lo">$0</div><div class="es" id="ext-lo-s">10%</div></div>
+            <div class="ec mid"><div class="el">Mid</div><div class="ev" id="ext-mi">$0</div><div class="es" id="ext-mi-s">15%</div></div>
+            <div class="ec hi"><div class="el">High</div><div class="ev" id="ext-hi">$0</div><div class="es" id="ext-hi-s">20%</div></div>
+          </div>
         </div>
       </div>
     </div>
@@ -339,23 +330,13 @@
           <button class="pb-navbtn" onclick="stepMonth(1)">Next →</button>
         </div>
       </div>
-
-      <!-- Store name management -->
-      <div class="store-name-mgmt">
-        <span class="snm-label">Stores</span>
-        <div class="store-tags" id="store-tags"></div>
-        <input type="text" class="store-add-input" id="new-store-input" placeholder="New store name…" onkeydown="if(event.key==='Enter')addStoreName()">
-        <button class="btn-add-store-name" onclick="addStoreName()">+ Add</button>
-      </div>
-
       <div id="daily-content">
         <div class="entry-form">
           <h3>+ New Daily Entry</h3>
           <div class="efg">
-            <div style="display:flex;flex-direction:column;gap:4px;"><label style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-family:'DM Mono',monospace;">Date</label><input type="date" id="e-date"></div>
-            <div style="display:flex;flex-direction:column;gap:4px;"><label style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-family:'DM Mono',monospace;">Store</label>
-              <select id="e-store"><option value="">— General —</option></select></div>
-            <div style="display:flex;flex-direction:column;gap:4px;"><label style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-family:'DM Mono',monospace;">Type</label>
+            <div class="field"><label>Date</label><input type="date" id="e-date"></div>
+            <div class="field"><label>Store</label><select id="e-store"><option value="">— General —</option></select></div>
+            <div class="field"><label>Type</label>
               <select id="e-type" onchange="onTypeChange()">
                 <option value="income">📥 Incoming — Store Revenue</option>
                 <option value="supplier">📦 Supplier Payout</option>
@@ -364,8 +345,8 @@
                 <option value="services-cc">💳 Paid Services — Credit Card</option>
                 <option value="salary">👤 Employee Salary</option>
               </select></div>
-            <div style="display:flex;flex-direction:column;gap:4px;"><label style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-family:'DM Mono',monospace;">Amount ($)</label><input type="number" id="e-amt" min="0" step="0.01" placeholder="0.00"></div>
-            <div style="display:flex;flex-direction:column;gap:4px;"><label style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-family:'DM Mono',monospace;">Note (optional)</label><input type="text" id="e-note" placeholder="supplier, platform…"></div>
+            <div class="field"><label>Amount ($)</label><input type="number" id="e-amt" min="0" step="0.01" placeholder="0.00"></div>
+            <div class="field"><label>Note (optional)</label><input type="text" id="e-note" placeholder="supplier, platform…"></div>
             <div><button class="btn-eadd" id="btn-add-entry" onclick="addEntry()">Add Entry</button></div>
           </div>
           <div id="note-income" class="inline-note note-warn">Payoneer fee auto-calculated: 1% if ≥$100, flat $1 if &lt;$100.</div>
@@ -374,14 +355,13 @@
         <div class="eom-box">
           <h3>💳 End-of-Month Credit Card Totals</h3>
           <div class="eom-row">
-            <div style="display:flex;flex-direction:column;gap:4px;min-width:180px;"><label style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-family:'DM Mono',monospace;">CC Paid Ads ($)</label><input type="number" id="eom-ads" min="0" step="0.01" placeholder="0.00" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;font-family:'DM Mono',monospace;font-size:13px;border-radius:4px;outline:none;"></div>
-            <div style="display:flex;flex-direction:column;gap:4px;min-width:180px;"><label style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-family:'DM Mono',monospace;">CC Services ($)</label><input type="number" id="eom-svc" min="0" step="0.01" placeholder="0.00" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;font-family:'DM Mono',monospace;font-size:13px;border-radius:4px;outline:none;"></div>
+            <div class="field" style="min-width:180px;"><label>CC Paid Ads ($)</label><input type="number" id="eom-ads" min="0" step="0.01" placeholder="0.00"></div>
+            <div class="field" style="min-width:180px;"><label>CC Services ($)</label><input type="number" id="eom-svc" min="0" step="0.01" placeholder="0.00"></div>
             <div style="align-self:end;"><button class="btn-eadd" style="background:var(--purple);" onclick="addEomEntry()">Add as Entry</button></div>
           </div>
           <div class="eom-note">Total CC spend at month-end — posts as lump-sum on last day of month.</div>
         </div>
       </div>
-
       <div class="ledger-totals">
         <div class="tc" style="border-color:var(--green)"><div class="tl">Total Incoming</div><div class="tv" id="lt-in" style="color:var(--green)">$0.00</div></div>
         <div class="tc" style="border-color:var(--warn)"><div class="tl">Payoneer Fees</div><div class="tv" id="lt-fee" style="color:var(--warn)">$0.00</div></div>
@@ -420,26 +400,31 @@
           <div style="margin-top:14px;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);line-height:1.6;">Bookkeepers can only access the Daily Ledger.<br>They cannot see profits, summaries, or stores.</div>
         </div>
       </div>
+
       <hr class="section-divider">
+
+      <!-- LOCKED MONTHS -->
       <div class="section-title" style="color:var(--warn);margin-top:0;">🔒 Locked Months</div>
-      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:16px;">Past months auto-lock. You can manually lock/unlock from any page.</div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:16px;">Past months are auto-locked. You can manually lock/unlock any month from the Monthly Overview or Daily Ledger pages.</div>
       <div class="locked-months-list" id="locked-months-list"><div class="empty-state" style="padding:20px;">Loading…</div></div>
     </div>
   </div>
 </div>
 
 <script>
+// ── SUPABASE ─────────────────────────────────────
 const SUPABASE_URL='https://amamwkiqtsioyhvgjyum.supabase.co';
-const SUPABASE_KEY='sb_publishable_TgA8T4XcmRSDz2c9fNkPIQ_2FaykKrb ';
+const SUPABASE_KEY='sb_publishable_TgA8T4XcmRSDz2c9fNkPIQ_2FaykKrb';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-let currentUser=null, entries=[], isLocked=false;
-// storeNames: list of store name strings for this workspace (persisted in DB)
-let storeNames=[];
+// ── STATE ─────────────────────────────────────────
+let currentUser=null;
+let stores=[], entries=[];
+let isLocked=false; // is the current month locked?
 const MONTHS=['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
 let activeYear=new Date().getFullYear(), activeMonth=new Date().getMonth()+1;
 
-// ── HELPERS ──────────────────────────────────────
+// ── HELPERS ───────────────────────────────────────
 let toastTimer;
 function toast(msg,type='ok'){const t=document.getElementById('toast');t.textContent=msg;t.className='show '+type;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.className='',3500);}
 function setSyncing(s){const d=document.getElementById('sync-dot');d.className='sync-dot'+(s==='syncing'?' syncing':s==='err'?' err':'');}
@@ -450,199 +435,114 @@ async function sha256(str){const buf=await crypto.subtle.digest('SHA-256',new Te
 function saveSession(u){localStorage.setItem('rl_session',JSON.stringify(u));}
 function loadSession(){try{return JSON.parse(localStorage.getItem('rl_session'));}catch{return null;}}
 function clearSession(){localStorage.removeItem('rl_session');}
-function isPastMonth(){const n=new Date();return activeYear<n.getFullYear()||(activeYear===n.getFullYear()&&activeMonth<n.getMonth()+1);}
-const fmt=v=>{const n=parseFloat(v)||0;return(n<0?'-$':' $')+Math.abs(n).toFixed(2);}
 
-// ── STORE NAMES (workspace-level, not month-specific) ──
-async function loadStoreNames(){
-  // stored as a single row in a workspace_settings table or we use a simple stores_list table
-  // We'll store in Supabase as a JSON value in a settings-style table
-  const{data}=await sb.from('store_names').select('*').eq('workspace_id',currentUser.workspace_id).order('name');
-  storeNames=(data||[]).map(r=>({id:r.id,name:r.name}));
-  renderStoreTags();
-  syncStoreDropdown();
-}
-
-async function addStoreName(){
-  const inp=document.getElementById('new-store-input');
-  const name=inp.value.trim();
-  if(!name)return;
-  if(storeNames.find(s=>s.name.toLowerCase()===name.toLowerCase())){toast('Store already exists','warn');return;}
-  setSyncing('syncing');
-  const{data,error}=await sb.from('store_names').insert([{name,workspace_id:currentUser.workspace_id}]).select().single();
-  if(error){toast('Could not add store: '+error.message,'err');setSyncing('err');return;}
-  storeNames.push({id:data.id,name:data.name});
-  inp.value='';
-  renderStoreTags();syncStoreDropdown();setSyncing('ok');toast('Store added ✓','ok');
-}
-
-async function removeStoreName(id,name){
-  if(!confirm(`Remove store "${name}"? This won't delete existing entries.`))return;
-  setSyncing('syncing');
-  await sb.from('store_names').delete().eq('id',id);
-  storeNames=storeNames.filter(s=>s.id!==id);
-  renderStoreTags();syncStoreDropdown();setSyncing('ok');toast('Store removed','inf');
-}
-
-function renderStoreTags(){
-  const container=document.getElementById('store-tags');
-  if(!container)return;
-  if(!storeNames.length){container.innerHTML='<span style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);">No stores yet — add one →</span>';return;}
-  container.innerHTML=storeNames.map(s=>`
-    <div class="store-tag">
-      <span>${s.name}</span>
-      <button class="st-rm" onclick="removeStoreName('${s.id}','${s.name.replace(/'/g,'\\\'')}')" title="Remove">✕</button>
-    </div>`).join('');
-}
-
-function syncStoreDropdown(){
-  const sel=document.getElementById('e-store');if(!sel)return;
-  const cur=sel.value;
-  sel.innerHTML='<option value="">— General —</option>';
-  storeNames.forEach(s=>{const o=document.createElement('option');o.value=s.name;o.textContent=s.name;sel.appendChild(o);});
-  if(storeNames.find(s=>s.name===cur))sel.value=cur;
-}
-
-// ── COMPUTE MONTHLY OVERVIEW FROM ENTRIES ──────────
-function computeMonthlyOverview(){
-  // Group entries by store
-  const storeMap={}; // storeName -> {income, fees, supplier, adsP2P, cc, salary}
-  const general={income:0,fees:0,supplier:0,adsP2P:0,cc:0,salary:0};
-
-  entries.forEach(e=>{
-    const key=e.store_name&&e.store_name!=='—'?e.store_name:null;
-    const target=key?(storeMap[key]=storeMap[key]||{income:0,fees:0,supplier:0,adsP2P:0,cc:0,salary:0}):general;
-    if(e.type==='income'){target.income+=+e.amount;target.fees+=+e.fee;}
-    else if(e.type==='supplier')target.supplier+=+e.amount;
-    else if(e.type==='ads-payoneer')target.adsP2P+=+e.amount;
-    else if(['ads-cc','services-cc','cc-eom'].includes(e.type))target.cc+=+e.amount;
-    else if(e.type==='salary')target.salary+=+e.amount;
-  });
-
-  // Merge general into totals but show as "General" store if non-zero
-  if(general.income||general.fees||general.supplier||general.adsP2P||general.cc||general.salary){
-    storeMap['— General —']=general;
-  }
-
-  return storeMap;
-}
-
-function renderMonthlyOverview(){
-  const storeMap=computeMonthlyOverview();
-  const grid=document.getElementById('store-breakdown-grid');
-  const stores=Object.entries(storeMap);
-
-  if(!stores.length){
-    grid.innerHTML='<div class="no-data-box"><span>📊</span>No entries yet for this month.<br>Add entries in the Daily Ledger and they\'ll appear here automatically.</div>';
-    // zero out summary
-    ['sum-rev','sum-pf','sum-sup','sum-cc','sum-p2p','sum-sal','sum-exp'].forEach(id=>document.getElementById(id).textContent='$0.00');
-    document.getElementById('sum-profit').textContent='$0.00';document.getElementById('sum-profit').style.color='var(--text)';
-    document.getElementById('sum-margin').textContent='0.0%';
-    updateExtraction(0);return;
-  }
-
-  // Colors for store dots
-  const dotColors=['#c8f060','#60c8f0','#b060f0','#f0b060','#60f0a0','#f06060','#f090f0','#60a0f0'];
-  let html='';
-  stores.forEach(([name,d],i)=>{
-    const exp=d.fees+d.supplier+d.adsP2P+d.cc+d.salary;
-    const net=d.income-exp;
-    const mg=d.income>0?(net/d.income*100):0;
-    const color=dotColors[i%dotColors.length];
-    html+=`<div class="sbc">
-      <div class="sbc-header">
-        <div class="sbc-dot" style="background:${color}"></div>
-        <span class="sbc-name">${name}</span>
-      </div>
-      <div class="sbc-body">
-        <div class="sbc-item"><span class="sbc-label">Gross Revenue</span><span class="sbc-val g">$${d.income.toFixed(2)}</span></div>
-        <div class="sbc-item"><span class="sbc-label">Payoneer Fees</span><span class="sbc-val w">${d.fees>0?'-$'+d.fees.toFixed(2):'—'}</span></div>
-        <div class="sbc-item"><span class="sbc-label">After Fee</span><span class="sbc-val a2">$${(d.income-d.fees).toFixed(2)}</span></div>
-        <div class="sbc-item"><span class="sbc-label">Supplier</span><span class="sbc-val r">${d.supplier>0?'-$'+d.supplier.toFixed(2):'—'}</span></div>
-        <div class="sbc-item"><span class="sbc-label">Ads / Services CC</span><span class="sbc-val r">${d.cc>0?'-$'+d.cc.toFixed(2):'—'}</span></div>
-        <div class="sbc-item"><span class="sbc-label">Ads Payoneer P2P</span><span class="sbc-val r">${d.adsP2P>0?'-$'+d.adsP2P.toFixed(2):'—'}</span></div>
-        <div class="sbc-item"><span class="sbc-label">Salaries</span><span class="sbc-val r">${d.salary>0?'-$'+d.salary.toFixed(2):'—'}</span></div>
-        <div class="sbc-item"><span class="sbc-label">Total Expenses</span><span class="sbc-val r">${exp>0?'-$'+exp.toFixed(2):'—'}</span></div>
-      </div>
-      <div class="sbc-footer">
-        <div><span class="sbc-net-label">Net Profit</span></div>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span class="sbc-net-val" style="color:${net>=0?'var(--accent)':'var(--danger)'}">${net>=0?'$'+net.toFixed(2):'-$'+Math.abs(net).toFixed(2)}</span>
-          <span class="sbc-margin" style="color:${mg>=0?'var(--accent)':'var(--danger)';background:${mg>=0?'rgba(200,240,96,.08)':'rgba(240,96,96,.08)'}}">${mg.toFixed(1)}%</span>
-        </div>
-      </div>
-    </div>`;
-  });
-  grid.innerHTML=html;
-
-  // Combined totals
-  let tR=0,tF=0,tS=0,tC=0,tP=0,tSa=0;
-  stores.forEach(([,d])=>{tR+=d.income;tF+=d.fees;tS+=d.supplier;tC+=d.cc;tP+=d.adsP2P;tSa+=d.salary;});
-  const exp=tF+tS+tC+tP+tSa, net=tR-exp, mg=tR>0?(net/tR*100):0;
-  const f=v=>'$'+v.toFixed(2);
-  document.getElementById('sum-rev').textContent=f(tR);
-  document.getElementById('sum-pf').textContent=f(tF);
-  document.getElementById('sum-sup').textContent=f(tS);
-  document.getElementById('sum-cc').textContent=f(tC);
-  document.getElementById('sum-p2p').textContent=f(tP);
-  document.getElementById('sum-sal').textContent=f(tSa);
-  document.getElementById('sum-exp').textContent=f(exp);
-  const pe=document.getElementById('sum-profit');
-  pe.textContent=net>=0?f(net):'-$'+Math.abs(net).toFixed(2);
-  pe.style.color=net>=0?'var(--accent)':'var(--danger)';
-  document.getElementById('sum-margin').textContent=mg.toFixed(1)+'%';
-  updateExtraction(net);
-}
-
-function updateExtraction(net){
-  const mn=parseInt(document.getElementById('sl-min').value),mx=parseInt(document.getElementById('sl-max').value),mid=Math.round((mn+mx)/2);
-  document.getElementById('pct-min').textContent=mn+'%';document.getElementById('pct-max').textContent=mx+'%';
-  const fv=v=>v>=0?'$'+v.toFixed(2):'-$'+Math.abs(v).toFixed(2);
-  document.getElementById('ext-lo').textContent=fv(net*mn/100);document.getElementById('ext-lo-s').textContent=mn+'% of net';
-  document.getElementById('ext-mi').textContent=fv(net*mid/100);document.getElementById('ext-mi-s').textContent=mid+'% of net';
-  document.getElementById('ext-hi').textContent=fv(net*mx/100);document.getElementById('ext-hi-s').textContent=mx+'% of net';
+// ── IS PAST MONTH? ────────────────────────────────
+function isPastMonth(){
+  const now=new Date();
+  const curY=now.getFullYear(), curM=now.getMonth()+1;
+  return activeYear<curY||(activeYear===curY&&activeMonth<curM);
 }
 
 // ── LOCK SYSTEM ───────────────────────────────────
 async function checkLock(){
-  const{data}=await sb.from('locked_months').select('*').eq('month',currentMonthStr()).eq('workspace_id',currentUser.workspace_id).maybeSingle();
-  isLocked=!!data;applyLockUI(data);
+  const{data}=await sb.from('locked_months').select('*')
+    .eq('month',currentMonthStr())
+    .eq('workspace_id',currentUser.workspace_id)
+    .maybeSingle();
+  isLocked=!!data;
+  applyLockUI(data);
 }
+
 function applyLockUI(lockData){
   const isOwner=currentUser.role==='owner';
   const month=MONTHS[activeMonth-1]+' '+activeYear;
-  ['pb-monthly','pb-daily'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.toggle('locked',isLocked);});
-  ['pb-lock-monthly','pb-lock-daily'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=isLocked?'inline':'none';});
-  const bannerHTML=isLocked?
-    `<div class="lock-banner"><span class="lb-icon">🔒</span><div class="lb-text"><div class="lb-title">Month Locked — ${month}</div><div class="lb-sub">No entries can be added or edited.${lockData?.locked_by?' Locked by '+lockData.locked_by:''}</div></div>${isOwner?`<button class="btn-unlock" onclick="unlockMonth()">Unlock Month</button>`:''}</div>`:
-    (isOwner&&isPastMonth()?`<div class="lock-banner warn-past"><span class="lb-icon">⚠️</span><div class="lb-text"><div class="lb-title red">Past Month — Unlocked</div><div class="lb-sub">This is a past month. Lock it to prevent accidental edits.</div></div><button class="btn-lock" onclick="lockMonth()">🔒 Lock Month</button></div>`:'');
+
+  // Period banners
+  ['pb-monthly','pb-daily'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.toggle('locked',isLocked);
+  });
+  ['pb-lock-monthly','pb-lock-daily'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display=isLocked?'inline':'none';
+  });
+
+  // Lock banners
+  const bannerHTML=isLocked?`
+    <div class="lock-banner">
+      <span class="lb-icon">🔒</span>
+      <div class="lb-text">
+        <div class="lb-title">Month Locked — ${month}</div>
+        <div class="lb-sub">This month is locked. No entries can be added or deleted.${lockData?.locked_by?' Locked by '+lockData.locked_by:''}</div>
+      </div>
+      ${isOwner?`<button class="btn-unlock" onclick="unlockMonth()">Unlock Month</button>`:''}
+    </div>`:
+    (isOwner&&isPastMonth()?`
+    <div class="lock-banner" style="background:rgba(240,96,96,.04);border-color:rgba(240,96,96,.2);">
+      <span class="lb-icon">⚠️</span>
+      <div class="lb-text">
+        <div class="lb-title" style="color:var(--danger)">Past Month — Unlocked</div>
+        <div class="lb-sub">This is a past month. Lock it to prevent accidental edits.</div>
+      </div>
+      <button class="btn-lock" onclick="lockMonth()">🔒 Lock Month</button>
+    </div>`:'');
+
   document.getElementById('monthly-lock-banner').innerHTML=bannerHTML;
   document.getElementById('daily-lock-banner').innerHTML=bannerHTML;
+
+  // Disable inputs if locked or if bookkeeper on past month
   const shouldDisable=isLocked||(currentUser.role==='bookkeeper'&&isPastMonth());
-  const dc=document.getElementById('daily-content');if(dc)dc.classList.toggle('month-locked',shouldDisable);
+  ['monthly-content','daily-content'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.classList.toggle('month-locked',shouldDisable);
+  });
+  const addStoreBtn=document.getElementById('btn-add-store');
+  if(addStoreBtn) addStoreBtn.style.display=shouldDisable?'none':'flex';
 }
+
 async function lockMonth(){
-  if(!confirm(`Lock ${MONTHS[activeMonth-1]} ${activeYear}?`))return;
+  if(!confirm(`Lock ${MONTHS[activeMonth-1]} ${activeYear}? Owners can unlock it later.`))return;
   setSyncing('syncing');
-  await sb.from('locked_months').insert([{month:currentMonthStr(),workspace_id:currentUser.workspace_id,locked_by:currentUser.username}]);
-  isLocked=true;await checkLock();setSyncing('ok');toast(`🔒 ${MONTHS[activeMonth-1]} ${activeYear} locked`,'warn');
+  const{error}=await sb.from('locked_months').insert([{
+    month:currentMonthStr(),
+    workspace_id:currentUser.workspace_id,
+    locked_by:currentUser.username
+  }]);
+  if(error&&!error.message.includes('unique')){toast('Could not lock: '+error.message,'err');setSyncing('err');return;}
+  isLocked=true;
+  await checkLock();
+  setSyncing('ok');
+  toast(`🔒 ${MONTHS[activeMonth-1]} ${activeYear} locked`,'warn');
 }
+
 async function unlockMonth(){
-  if(!confirm(`Unlock ${MONTHS[activeMonth-1]} ${activeYear}?`))return;
+  if(!confirm(`Unlock ${MONTHS[activeMonth-1]} ${activeYear}? Data will be editable again.`))return;
   setSyncing('syncing');
-  await sb.from('locked_months').delete().eq('month',currentMonthStr()).eq('workspace_id',currentUser.workspace_id);
-  isLocked=false;applyLockUI(null);setSyncing('ok');toast(`🔓 ${MONTHS[activeMonth-1]} ${activeYear} unlocked`,'ok');
+  const{error}=await sb.from('locked_months').delete()
+    .eq('month',currentMonthStr())
+    .eq('workspace_id',currentUser.workspace_id);
+  if(error){toast('Could not unlock: '+error.message,'err');setSyncing('err');return;}
+  isLocked=false;
+  applyLockUI(null);
+  setSyncing('ok');
+  toast(`🔓 ${MONTHS[activeMonth-1]} ${activeYear} unlocked`,'ok');
 }
+
+// Auto-lock past months on load
 async function autoLockPastMonths(){
   if(currentUser.role!=='owner')return;
   const now=new Date();
-  const prev=new Date(now.getFullYear(),now.getMonth()-1,1);
-  const prevM=`${prev.getFullYear()}-${String(prev.getMonth()+1).padStart(2,'0')}`;
-  const{data:ex}=await sb.from('locked_months').select('id').eq('month',prevM).eq('workspace_id',currentUser.workspace_id).maybeSingle();
-  if(!ex)await sb.from('locked_months').insert([{month:prevM,workspace_id:currentUser.workspace_id,locked_by:'system (auto)'}]);
+  // lock previous month if not already locked
+  const prevDate=new Date(now.getFullYear(),now.getMonth()-1,1);
+  const prevMonth=`${prevDate.getFullYear()}-${String(prevDate.getMonth()+1).padStart(2,'0')}`;
+  const{data:existing}=await sb.from('locked_months').select('id').eq('month',prevMonth).eq('workspace_id',currentUser.workspace_id).maybeSingle();
+  if(!existing){
+    await sb.from('locked_months').insert([{month:prevMonth,workspace_id:currentUser.workspace_id,locked_by:'system (auto)'}]).then(()=>{});
+  }
 }
 
-// ── LOGIN ─────────────────────────────────────────
+// ── LOGIN ──────────────────────────────────────────
 async function doLogin(){
   const username=document.getElementById('li-user').value.trim();
   const password=document.getElementById('li-pass').value;
@@ -657,31 +557,40 @@ async function doLogin(){
   if(error||!data){errEl.textContent='Incorrect username or password.';return;}
   currentUser=data;saveSession(data);launchApp();
 }
+
 function doLogout(){
   clearSession();currentUser=null;
   document.getElementById('app').style.display='none';
   document.getElementById('login-screen').classList.remove('hidden');
-  document.getElementById('li-user').value='';document.getElementById('li-pass').value='';
+  document.getElementById('li-user').value='';
+  document.getElementById('li-pass').value='';
   document.getElementById('login-err').textContent='';
 }
 
-// ── LAUNCH ────────────────────────────────────────
+// ── LAUNCH APP ─────────────────────────────────────
 function launchApp(){
   document.getElementById('login-screen').classList.add('hidden');
   document.getElementById('app').style.display='block';
   document.getElementById('hdr-username').textContent=currentUser.username;
-  const re=document.getElementById('hdr-role');re.textContent=currentUser.role;re.className='user-role role-'+currentUser.role;
+  const roleEl=document.getElementById('hdr-role');
+  roleEl.textContent=currentUser.role;roleEl.className='user-role role-'+currentUser.role;
   document.getElementById('workspace-label').textContent=currentUser.username.toUpperCase()+"'S WORKSPACE";
-  const nav=document.getElementById('nav-tabs');nav.innerHTML='';
+  const nav=document.getElementById('nav-tabs');
+  nav.innerHTML='';
   if(currentUser.role==='owner'){
-    nav.innerHTML=`<button class="nav-tab active" onclick="showPage('monthly',this)">Monthly Overview</button><button class="nav-tab" onclick="showPage('daily',this)">Daily Ledger</button><button class="nav-tab" onclick="showPage('admin',this);loadAdminPanel()">Team</button>`;
+    nav.innerHTML=`
+      <button class="nav-tab active" onclick="showPage('monthly',this)">Monthly Overview</button>
+      <button class="nav-tab" onclick="showPage('daily',this)">Daily Ledger</button>
+      <button class="nav-tab" onclick="showPage('admin',this);loadAdminPanel()">Team</button>`;
   } else {
     nav.innerHTML=`<button class="nav-tab active" onclick="showPage('daily',this)">Daily Ledger</button>`;
   }
   buildYearSelect();updateNavUI();
-  showPage(currentUser.role==='owner'?'monthly':'daily',nav.querySelector('.nav-tab'));
+  showPage(currentUser.role==='owner'?'monthly':'daily', nav.querySelector('.nav-tab'));
   autoLockPastMonths().then(()=>loadAll());
 }
+
+// ── NAV ────────────────────────────────────────────
 function showPage(pg,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
@@ -690,7 +599,10 @@ function showPage(pg,btn){
 }
 function buildYearSelect(){
   const sel=document.getElementById('mnav-year-select');sel.innerHTML='';
-  for(let y=new Date().getFullYear()+2;y>=2024;y--){const o=document.createElement('option');o.value=y;o.textContent=y;if(y===activeYear)o.selected=true;sel.appendChild(o);}
+  for(let y=new Date().getFullYear()+2;y>=2024;y--){
+    const o=document.createElement('option');o.value=y;o.textContent=y;
+    if(y===activeYear)o.selected=true;sel.appendChild(o);
+  }
 }
 function updateNavUI(){
   document.getElementById('mnav-month-label').textContent=MONTHS[activeMonth-1];
@@ -699,8 +611,7 @@ function updateNavUI(){
   const m=document.getElementById('pb-val-monthly'),d=document.getElementById('pb-val-daily');
   if(m)m.textContent=label;if(d)d.textContent=label;
   const today=new Date();
-  const eDateEl=document.getElementById('e-date');
-  if(eDateEl)eDateEl.value=(today.getFullYear()===activeYear&&today.getMonth()+1===activeMonth)?today.toISOString().split('T')[0]:`${activeYear}-${String(activeMonth).padStart(2,'0')}-01`;
+  document.getElementById('e-date').value=(today.getFullYear()===activeYear&&today.getMonth()+1===activeMonth)?today.toISOString().split('T')[0]:`${activeYear}-${String(activeMonth).padStart(2,'0')}-01`;
 }
 function stepMonth(dir){
   activeMonth+=dir;
@@ -710,20 +621,132 @@ function stepMonth(dir){
 }
 function onYearSelect(y){activeYear=parseInt(y);buildYearSelect();updateNavUI();loadAll();}
 
-// ── LOAD ──────────────────────────────────────────
+// ── LOAD ───────────────────────────────────────────
 async function loadAll(){
   showLoading(true,'LOADING DATA…');
-  await Promise.all([loadEntries(),checkLock(),loadStoreNames()]);
+  await Promise.all([loadStores(),loadEntries(),checkLock()]);
   showLoading(false);setSyncing('ok');
-  if(currentUser.role==='owner')renderMonthlyOverview();
 }
+
+async function loadStores(){
+  if(currentUser.role==='bookkeeper')return;
+  const{data,error}=await sb.from('stores').select('*').eq('month',currentMonthStr()).eq('workspace_id',currentUser.workspace_id).order('created_at');
+  if(error){toast('Error loading stores','err');setSyncing('err');return;}
+  stores=data||[];renderAllStoreCards();updateSummary();syncStoreDropdown();
+}
+
 async function loadEntries(){
   const{data,error}=await sb.from('entries').select('*').eq('month',currentMonthStr()).eq('workspace_id',currentUser.workspace_id).order('date').order('created_at');
   if(error){toast('Error loading entries','err');return;}
   entries=data||[];renderLedger();
 }
 
-// ── LEDGER ────────────────────────────────────────
+// ── STORES ─────────────────────────────────────────
+function renderAllStoreCards(){
+  document.getElementById('stores-grid').innerHTML='';
+  stores.forEach(s=>renderStoreCard(s));
+}
+function renderStoreCard(s){
+  const g=document.getElementById('stores-grid');
+  const d=document.createElement('div');d.className='store-card';d.id='sc-'+s.id;
+  d.innerHTML=`
+    <div class="store-header">
+      <div class="store-dot"></div>
+      <input class="store-name-input" placeholder="STORE NAME" value="${s.name||''}" onchange="updateStoreField('${s.id}','name',this.value)">
+      <button class="btn-rm" onclick="removeStore('${s.id}')">✕</button>
+    </div>
+    <div class="store-body">
+      <div class="field-row">
+        <div class="field"><label>Gross Revenue ($)</label><input type="number" min="0" step="0.01" placeholder="0.00" value="${s.revenue||''}" onchange="updateStoreField('${s.id}','revenue',this.value)"></div>
+        <div class="field"><label>Supplier Cost ($)</label><input type="number" min="0" step="0.01" placeholder="0.00" value="${s.supplier||''}" onchange="updateStoreField('${s.id}','supplier',this.value)"></div>
+      </div>
+      <div class="fee-note" id="fn-${s.id}">Payoneer fee: —</div>
+      <div class="field-row">
+        <div class="field"><label>CC / Paid Ads / Services ($)</label><input type="number" min="0" step="0.01" placeholder="0.00" value="${s.cc||''}" onchange="updateStoreField('${s.id}','cc',this.value)"></div>
+        <div class="field"><label>Agency Funding P2P ($)</label><input type="number" min="0" step="0.01" placeholder="0.00" value="${s.p2p||''}" onchange="updateStoreField('${s.id}','p2p',this.value)"></div>
+      </div>
+      <div class="p2p-note">P2P agency/marketing — no extra Payoneer fee.</div>
+      <div class="field-row">
+        <div class="field"><label>Employee Salaries ($)</label><input type="number" min="0" step="0.01" placeholder="0.00" value="${s.salary||''}" onchange="updateStoreField('${s.id}','salary',this.value)"></div>
+      </div>
+      <div class="store-result">
+        <div class="res-item"><span class="res-label">After Payoneer Fee</span><span class="res-val a2" id="ra-${s.id}">—</span></div>
+        <div class="res-item"><span class="res-label">Total Expenses</span><span class="res-val red" id="re-${s.id}">—</span></div>
+        <div class="res-item"><span class="res-label">Net Profit</span><span class="res-val" id="rn-${s.id}">—</span></div>
+        <div class="res-item"><span class="res-label">Margin</span><span class="res-val" id="rm-${s.id}">—</span></div>
+      </div>
+    </div>`;
+  g.appendChild(d);recalcStore(s.id);
+}
+async function addStore(){
+  if(isLocked){toast('🔒 This month is locked','warn');return;}
+  setSyncing('syncing');
+  const{data,error}=await sb.from('stores').insert([{name:'STORE '+(stores.length+1),month:currentMonthStr(),workspace_id:currentUser.workspace_id,revenue:0,supplier:0,cc:0,p2p:0,salary:0}]).select().single();
+  if(error){toast('Could not add store: '+error.message,'err');setSyncing('err');return;}
+  stores.push(data);renderStoreCard(data);syncStoreDropdown();updateSummary();setSyncing('ok');toast('Store added','ok');
+}
+async function removeStore(id){
+  if(isLocked){toast('🔒 This month is locked','warn');return;}
+  if(!confirm('Remove this store?'))return;
+  setSyncing('syncing');
+  const{error}=await sb.from('stores').delete().eq('id',id);
+  if(error){toast('Could not remove: '+error.message,'err');setSyncing('err');return;}
+  stores=stores.filter(s=>s.id!==id);
+  document.getElementById('sc-'+id)?.remove();
+  syncStoreDropdown();updateSummary();setSyncing('ok');toast('Store removed','ok');
+}
+const debounceTimers={};
+async function updateStoreField(id,field,value){
+  if(isLocked){toast('🔒 This month is locked','warn');return;}
+  const s=stores.find(x=>x.id===id);if(!s)return;
+  s[field]=value;recalcStore(id);updateSummary();
+  clearTimeout(debounceTimers[id+field]);
+  debounceTimers[id+field]=setTimeout(async()=>{
+    setSyncing('syncing');
+    const u={};u[field]=field==='name'?value:(parseFloat(value)||0);
+    const{error}=await sb.from('stores').update(u).eq('id',id);
+    if(error){toast('Save failed','err');setSyncing('err');}else setSyncing('ok');
+  },600);
+}
+function recalcStore(id){
+  const s=stores.find(x=>x.id===id);if(!s)return;
+  const rev=parseFloat(s.revenue)||0,fee=pyFee(rev),af=rev-fee;
+  const sup=parseFloat(s.supplier)||0,cc=parseFloat(s.cc)||0,p2p=parseFloat(s.p2p)||0,sal=parseFloat(s.salary)||0;
+  const exp=fee+sup+cc+p2p+sal,net=rev-exp,mg=rev>0?(net/rev*100):0;
+  const fn=document.getElementById('fn-'+id);
+  if(fn)fn.textContent=rev<=0?'Payoneer fee: —':rev<100?'Payoneer fee: $1.00 (flat)':`Payoneer fee: $${fee.toFixed(2)} (1%)`;
+  const st=(eid,v,c)=>{const el=document.getElementById(eid);if(el){el.textContent=v;if(c)el.className='res-val '+c;}};
+  st('ra-'+id,rev>0?'$'+af.toFixed(2):'—','a2');
+  st('re-'+id,exp>0?'$'+exp.toFixed(2):'—','red');
+  st('rn-'+id,rev>0?(net>=0?'$'+net.toFixed(2):'-$'+Math.abs(net).toFixed(2)):'—',net>=0?'green':'red');
+  st('rm-'+id,rev>0?mg.toFixed(1)+'%':'—',mg>=0?'green':'red');
+}
+function updateSummary(){
+  let tR=0,tF=0,tS=0,tC=0,tP=0,tSa=0;
+  stores.forEach(s=>{const r=parseFloat(s.revenue)||0;tR+=r;tF+=pyFee(r);tS+=parseFloat(s.supplier)||0;tC+=parseFloat(s.cc)||0;tP+=parseFloat(s.p2p)||0;tSa+=parseFloat(s.salary)||0;});
+  const exp=tF+tS+tC+tP+tSa,net=tR-exp,mg=tR>0?(net/tR*100):0;
+  const f=v=>'$'+v.toFixed(2);
+  ['sum-rev','sum-pf','sum-sup','sum-cc','sum-p2p','sum-sal','sum-exp'].forEach((id,i)=>{document.getElementById(id).textContent=f([tR,tF,tS,tC,tP,tSa,exp][i]);});
+  const pe=document.getElementById('sum-profit');pe.textContent=net>=0?f(net):'-$'+Math.abs(net).toFixed(2);pe.style.color=net>=0?'var(--accent)':'var(--danger)';
+  document.getElementById('sum-margin').textContent=mg.toFixed(1)+'%';
+  updateExtraction(net);
+}
+function updateExtraction(net){
+  const mn=parseInt(document.getElementById('sl-min').value),mx=parseInt(document.getElementById('sl-max').value),mid=Math.round((mn+mx)/2);
+  document.getElementById('pct-min').textContent=mn+'%';document.getElementById('pct-max').textContent=mx+'%';
+  const fmt=v=>v>=0?'$'+v.toFixed(2):'-$'+Math.abs(v).toFixed(2);
+  document.getElementById('ext-lo').textContent=fmt(net*mn/100);document.getElementById('ext-lo-s').textContent=mn+'% of net';
+  document.getElementById('ext-mi').textContent=fmt(net*mid/100);document.getElementById('ext-mi-s').textContent=mid+'% of net';
+  document.getElementById('ext-hi').textContent=fmt(net*mx/100);document.getElementById('ext-hi-s').textContent=mx+'% of net';
+}
+
+// ── LEDGER ─────────────────────────────────────────
+function syncStoreDropdown(){
+  const sel=document.getElementById('e-store'),cur=sel.value;
+  sel.innerHTML='<option value="">— General —</option>';
+  stores.forEach(s=>{const o=document.createElement('option');o.value=s.id;o.textContent=s.name||'Store';sel.appendChild(o);});
+  sel.value=cur;
+}
 function onTypeChange(){
   const t=document.getElementById('e-type').value;
   document.getElementById('note-income').style.display=t==='income'?'block':'none';
@@ -733,30 +756,24 @@ const typeLabels={income:'Incoming',supplier:'Supplier Payout','ads-payoneer':'A
 const badgeClass={income:'b-income',supplier:'b-supplier','ads-payoneer':'b-ads-payoneer','ads-cc':'b-ads-cc','services-cc':'b-services-cc',salary:'b-salary','cc-eom':'b-cc-eom'};
 
 async function addEntry(){
-  if(isLocked){toast('🔒 This month is locked','warn');return;}
+  if(isLocked){toast('🔒 This month is locked — no entries can be added','warn');return;}
   const date=document.getElementById('e-date').value;
-  const storeName=document.getElementById('e-store').value;
+  const storeId=document.getElementById('e-store').value;
   const type=document.getElementById('e-type').value;
   const amt=parseFloat(document.getElementById('e-amt').value);
   const note=document.getElementById('e-note').value.trim();
   if(!date){toast('Pick a date','err');return;}
   if(!amt||amt<=0){toast('Enter a valid amount','err');return;}
+  const sName=storeId?(stores.find(s=>s.id===storeId)?.name||'Store'):'—';
   const fee=type==='income'?pyFee(amt):0;
   const btn=document.getElementById('btn-add-entry');btn.disabled=true;setSyncing('syncing');
-  const{data,error}=await sb.from('entries').insert([{
-    date,store_name:storeName||'—',type,amount:amt,fee,
-    note:note||null,month:currentMonthStr(),
-    workspace_id:currentUser.workspace_id,added_by:currentUser.username
-  }]).select().single();
+  const{data,error}=await sb.from('entries').insert([{date,store_id:storeId||null,store_name:sName,type,amount:amt,fee,note:note||null,month:currentMonthStr(),workspace_id:currentUser.workspace_id,added_by:currentUser.username}]).select().single();
   btn.disabled=false;
   if(error){toast('Could not save: '+error.message,'err');setSyncing('err');return;}
   entries.push(data);
   document.getElementById('e-amt').value='';document.getElementById('e-note').value='';
-  renderLedger();
-  if(currentUser.role==='owner')renderMonthlyOverview();
-  setSyncing('ok');toast('Entry saved ✓','ok');
+  renderLedger();setSyncing('ok');toast('Entry saved ✓','ok');
 }
-
 async function addEomEntry(){
   if(isLocked){toast('🔒 This month is locked','warn');return;}
   const ads=parseFloat(document.getElementById('eom-ads').value)||0;
@@ -765,29 +782,22 @@ async function addEomEntry(){
   const last=new Date(activeYear,activeMonth,0).getDate();
   const date=`${currentMonthStr()}-${String(last).padStart(2,'0')}`;
   const rows=[];
-  if(ads>0)rows.push({date,store_name:'—',type:'cc-eom',amount:ads,fee:0,note:'CC Paid Ads (EOM)',month:currentMonthStr(),workspace_id:currentUser.workspace_id,added_by:currentUser.username});
-  if(svc>0)rows.push({date,store_name:'—',type:'cc-eom',amount:svc,fee:0,note:'CC Services (EOM)',month:currentMonthStr(),workspace_id:currentUser.workspace_id,added_by:currentUser.username});
+  if(ads>0)rows.push({date,store_id:null,store_name:'—',type:'cc-eom',amount:ads,fee:0,note:'CC Paid Ads (EOM)',month:currentMonthStr(),workspace_id:currentUser.workspace_id,added_by:currentUser.username});
+  if(svc>0)rows.push({date,store_id:null,store_name:'—',type:'cc-eom',amount:svc,fee:0,note:'CC Services (EOM)',month:currentMonthStr(),workspace_id:currentUser.workspace_id,added_by:currentUser.username});
   setSyncing('syncing');
   const{data,error}=await sb.from('entries').insert(rows).select();
   if(error){toast('Could not save','err');setSyncing('err');return;}
   entries.push(...data);
   document.getElementById('eom-ads').value='';document.getElementById('eom-svc').value='';
-  renderLedger();
-  if(currentUser.role==='owner')renderMonthlyOverview();
-  setSyncing('ok');toast('CC entries saved ✓','ok');
+  renderLedger();setSyncing('ok');toast('CC entries saved ✓','ok');
 }
-
 async function delEntry(id){
-  if(isLocked){toast('🔒 This month is locked','warn');return;}
+  if(isLocked){toast('🔒 This month is locked — cannot delete entries','warn');return;}
   setSyncing('syncing');
   const{error}=await sb.from('entries').delete().eq('id',id);
   if(error){toast('Could not delete','err');setSyncing('err');return;}
-  entries=entries.filter(e=>e.id!==id);
-  renderLedger();
-  if(currentUser.role==='owner')renderMonthlyOverview();
-  setSyncing('ok');toast('Deleted','inf');
+  entries=entries.filter(e=>e.id!==id);renderLedger();setSyncing('ok');toast('Deleted','inf');
 }
-
 function renderLedger(){
   const rows=[...entries].sort((a,b)=>a.date.localeCompare(b.date));
   let tIn=0,tFee=0,tSup=0,tAdsP2P=0,tCC=0,tSal=0;
@@ -831,8 +841,9 @@ function renderLedger(){
   tbody.innerHTML=html;
 }
 
-// ── ADMIN ─────────────────────────────────────────
+// ── ADMIN ──────────────────────────────────────────
 async function loadAdminPanel(){
+  // Load team
   document.getElementById('user-list').innerHTML='<div class="empty-state" style="padding:16px;">Loading…</div>';
   const{data:users}=await sb.from('users').select('id,username,role,created_at').eq('workspace_id',currentUser.workspace_id).order('created_at');
   document.getElementById('user-list').innerHTML=(users||[]).map(u=>`
@@ -841,19 +852,30 @@ async function loadAdminPanel(){
       <span class="ur-role ur-${u.role}">${u.role}</span>
       ${u.role==='bookkeeper'?`<button class="btn-del-user" onclick="deleteUser('${u.id}','${u.username}')">✕</button>`:'<span style="width:20px;"></span>'}
     </div>`).join('')||'<div class="empty-state" style="padding:16px;">No team members yet.</div>';
+
+  // Load locked months
+  document.getElementById('locked-months-list').innerHTML='<div class="empty-state" style="padding:16px;">Loading…</div>';
   const{data:locked}=await sb.from('locked_months').select('*').eq('workspace_id',currentUser.workspace_id).order('month',{ascending:false});
   if(!locked||!locked.length){document.getElementById('locked-months-list').innerHTML='<div class="empty-state" style="padding:16px;">No locked months yet.</div>';return;}
   document.getElementById('locked-months-list').innerHTML=locked.map(l=>{
     const[y,m]=l.month.split('-');
-    return`<div class="lm-row"><span class="lb-icon">🔒</span><span class="lm-month">${MONTHS[parseInt(m)-1]} ${y}</span><span class="lm-by">by ${l.locked_by||'system'}</span><button class="btn-unlock" style="font-size:10px;padding:4px 10px;" onclick="unlockSpecific('${l.month}','${l.id}')">Unlock</button></div>`;
+    return`<div class="lm-row">
+      <span class="lb-icon">🔒</span>
+      <span class="lm-month">${MONTHS[parseInt(m)-1]} ${y}</span>
+      <span class="lm-by">by ${l.locked_by||'system'}</span>
+      <button class="btn-unlock" style="font-size:10px;padding:4px 10px;" onclick="unlockSpecific('${l.month}','${l.id}')">Unlock</button>
+    </div>`;
   }).join('');
 }
+
 async function unlockSpecific(month,id){
   if(!confirm(`Unlock ${month}?`))return;
   await sb.from('locked_months').delete().eq('id',id);
-  toast(`🔓 ${month} unlocked`,'ok');loadAdminPanel();
+  toast(`🔓 ${month} unlocked`,'ok');
+  loadAdminPanel();
   if(currentMonthStr()===month){isLocked=false;applyLockUI(null);}
 }
+
 async function createBookkeeper(){
   const username=document.getElementById('new-username').value.trim();
   const password=document.getElementById('new-password').value;
@@ -874,7 +896,7 @@ async function deleteUser(id,username){
   setSyncing('ok');toast(`${username} removed`,'inf');loadAdminPanel();
 }
 
-// ── INIT ──────────────────────────────────────────
+// ── INIT ───────────────────────────────────────────
 async function init(){
   showLoading(true,'LOADING…');
   const session=loadSession();
